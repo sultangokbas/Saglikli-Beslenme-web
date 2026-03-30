@@ -376,24 +376,6 @@ def kalori_ara():
         return jsonify({"found": False, "message": "Yemek adı boş"})
 
     food_id = None
-
-    # 1) USDA dene (daha hızlı ve güvenilir)
-    usda = _usda_lookup(food_name)
-    if usda:
-        name, kcal_100 = usda
-        if 'user_id' in session:
-            food_id = db.add_food_log(session['user_id'], name, kcal_100)
-        return jsonify({
-            "found": True,
-            "id": food_id,
-            "name": name,
-            "kcal_per_100g": kcal_100,
-            "portion": "100g",
-            "portion_kcal": kcal_100,
-            "source": "usda",
-            "message": f"{name}: 100g başına ~{kcal_100} kcal"
-        })
-
     # 2) AI fallback
     ai = _ai_kalori(food_name)
     if ai:

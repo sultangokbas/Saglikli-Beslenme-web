@@ -899,23 +899,67 @@ function switchTool(id,el){
 }
 
 // ── FOOD LOG ─────────────────────────────────────────────────────
-const foods=[]; let totalKcal=0;
-async function addFood(){
-  const inp=document.getElementById('foodInput');
-  const v=inp.value.trim(); if(!v)return;
-  const btn=inp.nextElementSibling; btn.textContent='...'; btn.disabled=true;
-  try{
-    const res=await fetch('/kalori-ara',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({food:v})});
-    const data=await res.json();
-    const kcal=data.found?data.kcal_per_100g:0;
-    foods.push({name:data.found?data.name:v,kcal});
-    totalKcal+=kcal; inp.value='';
-    const log=document.getElementById('foodLog');
-    log.innerHTML=foods.map(f=>`<div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px"><span>${f.name}</span><span style="color:var(--lime)">${f.kcal} kcal</span></div>`).join('');
-    document.getElementById('calorieLeft').textContent=Math.max(0,2200-totalKcal);
-    document.getElementById('calorieRing').style.strokeDashoffset=Math.max(0,314-314*totalKcal/2200);
-  }catch(err){alert('API bağlantı hatası.');}
-  finally{btn.textContent='+'; btn.disabled=false;}
+const foods = []; let totalKcal = 0;
+
+async function addFood() {
+  const inp = document.getElementById('foodInput');
+  const v = inp.value.trim(); if (!v) return;
+  const btn = inp.nextElementSibling; btn.textContent = '...'; btn.disabled = true;
+  try {
+    const res = await fetch('/kalori-ara', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ food: v }) });
+    const data = await res.json();
+    if (!data.found) {
+      alert(data.message || 'Yemek bulunamadı.');
+      return;
+    }
+    const kcal = data.portion_kcal || data.kcal_per_100g || 0;
+    const portion = data.portion || '100g';
+    const id = data.id || null;
+    foods.push({ id, name: data.name, kcal, portion });
+    totalKcal += kcal;
+    inp.value = '';
+    renderFoodLog();
+    updateCalorieUI();
+  } catch (err) {
+    alert('API bağlantı hatası.');
+  } finally {
+    btn.textContent = '+'; btn.disabled = false;
+  }
+}
+
+function renderFoodLog() {
+  const log = document.getElementById('foodLog');
+  if (!foods.length) { log.innerHTML = ''; return; }
+  log.innerHTML = foods.map((f, i) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px">
+      <span style="font-size:13px">${f.name} <span style="opacity:0.4;font-size:11px">(${f.portion})</span></span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="color:var(--lime);font-size:13px">${f.kcal} kcal</span>
+        <button onclick="removeFood(${i})" style="background:none;border:none;color:rgba(255,255,255,0.25);cursor:pointer;font-size:15px;padding:2px 4px;transition:color 0.2s;line-height:1" onmouseover="this.style.color='#e74c3c'" onmouseout="this.style.color='rgba(255,255,255,0.25)'">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function removeFood(index) {
+  const food = foods[index];
+  totalKcal -= food.kcal;
+  foods.splice(index, 1);
+  // Backend'de de sil (giriş yapılmışsa)
+  if (food.id) {
+    try {
+      await fetch('/yemek-sil', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: food.id }) });
+    } catch (e) {}
+  }
+  renderFoodLog();
+  updateCalorieUI();
+}
+
+function updateCalorieUI() {
+  const kalan = Math.max(0, 2200 - totalKcal);
+  document.getElementById('calorieLeft').textContent = kalan;
+  const offset = Math.max(0, 314 - 314 * Math.min(totalKcal / 2200, 1));
+  document.getElementById('calorieRing').style.strokeDashoffset = offset;
 }
 
 // ── SLEEP ────────────────────────────────────────────────────────
