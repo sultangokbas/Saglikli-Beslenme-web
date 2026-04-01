@@ -462,7 +462,6 @@ def favicon():
 
 
 @app.route('/admin')
-@app.route('/admin')
 def admin_panel():
     admin_password = os.environ.get("ADMIN_PASSWORD", "fitlife-admin-2026")
     if request.args.get("pw") != admin_password:
