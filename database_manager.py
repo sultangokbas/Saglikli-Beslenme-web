@@ -346,7 +346,8 @@ class DatabaseManager:
                 c = conn.cursor()
                 c.execute(
                     """INSERT INTO period_log
-                       (user_id, last_period_date, cycle_length, period_duration, notes, updated_at)
+                       (user_id, last_period_date, cycle_length,
+                        period_duration, notes, updated_at)
                        VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
                        ON CONFLICT(user_id) DO UPDATE SET
                            last_period_date = EXCLUDED.last_period_date,
@@ -362,7 +363,8 @@ class DatabaseManager:
             print(f"Period log hatası: {e}")
             return False
 
-    def get_latest_period_log(self, user_id):
+
+def get_latest_period_log(self, user_id):
         with self.get_connection() as conn:
             c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             c.execute(
@@ -370,6 +372,17 @@ class DatabaseManager:
             )
             row = c.fetchone()
         return dict(row) if row else None
+
+    # ─── ADMİN ───────────────────────────────────────────────────────────────────
+
+    def get_all_users(self):
+        with self.get_connection() as conn:
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            c.execute(
+                "SELECT id, username, email FROM users ORDER BY id DESC"
+            )
+            rows = c.fetchall()
+        return [dict(r) for r in rows]
 
 
 if __name__ == "__main__":

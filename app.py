@@ -461,5 +461,41 @@ def favicon():
     return send_from_directory(app.root_path, 'avokado-ikon.png', mimetype='image/png')
 
 
+@app.route('/admin')
+@app.route('/admin')
+def admin_panel():
+    admin_password = os.environ.get("ADMIN_PASSWORD", "fitlife-admin-2026")
+    if request.args.get("pw") != admin_password:
+        return """
+        <div style='font-family:sans-serif;padding:40px;background:#0f172a;color:#e2e8f0;min-height:100vh'>
+          <h2>🔐 Admin Paneli</h2>
+          <input type='password' id='pw' placeholder='Şifre' style='padding:8px;font-size:16px;background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px'>
+          <button onclick='location.href="/admin?pw="+document.getElementById("pw").value'
+            style='padding:8px 16px;margin-left:8px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer'>
+            Giriş
+          </button>
+        </div>""", 401
+    users = db.get_all_users()
+    rows = "".join(
+        f"<tr><td>{u['id']}</td><td>{u['username']}</td><td>{u['email']}</td></tr>"
+        for u in users
+    )
+    return f"""
+    <html><head><style>
+      body{{font-family:sans-serif;padding:30px;background:#0f172a;color:#e2e8f0;margin:0}}
+      h2{{color:#a78bfa}} 
+      table{{border-collapse:collapse;width:100%;margin-top:20px}}
+      th,td{{border:1px solid #334155;padding:12px;text-align:left}}
+      th{{background:#1e293b;color:#a78bfa}}
+      tr:hover{{background:#1e293b}}
+    </style></head><body>
+      <h2>👥 Kayıtlı Kullanıcılar — {len(users)} kişi</h2>
+      <table>
+        <tr><th>ID</th><th>Kullanıcı Adı</th><th>Email</th></tr>
+        {rows}
+      </table>
+    </body></html>"""
+
+
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)
