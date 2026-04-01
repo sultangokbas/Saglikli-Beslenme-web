@@ -147,12 +147,14 @@
   .mb-carbs{background:linear-gradient(to right,var(--green-light),var(--lime))}
   .mb-fat{background:linear-gradient(to right,#9b59b6,#e91e9e)}
   .add-food{display:flex;gap:12px;margin-top:8px}
-  .add-food input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--cream);border-radius:var(--radius-sm);padding:12px 18px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none}
+  .add-food input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--cream);border-radius:var(--radius-sm);padding:12px 18px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s}
   .add-food input:focus{border-color:var(--lime)}
-  .add-food button{background:var(--lime);color:var(--dark);border:none;border-radius:var(--radius-sm);padding:12px 20px;font-weight:700;cursor:pointer;font-size:14px;transition:all 0.2s}
+  .add-food input:disabled{opacity:0.5}
+  .add-food button{background:var(--lime);color:var(--dark);border:none;border-radius:var(--radius-sm);padding:12px 20px;font-weight:700;cursor:pointer;font-size:14px;transition:all 0.2s;min-width:48px}
+  .add-food button:disabled{opacity:0.5;cursor:not-allowed}
   .svg-ring{transform:rotate(-90deg)}
   .ring-track{fill:none;stroke:rgba(255,255,255,0.08)}
-  .ring-fill{fill:none;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease}
+  .ring-fill{fill:none;stroke-linecap:round;transition:stroke-dashoffset 0.8s ease, stroke 0.4s ease}
 
   /* REGL PANELİ */
   .period-inputs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -393,7 +395,7 @@
   </div>
 </section>
 
-<!-- PROGRAMS + PROFİL (2 SÜTUN) -->
+<!-- PROGRAMS -->
 <section class="programs reveal" id="programs">
   <div class="section-tag">● Programlar</div>
   <h2 class="section-title" style="color:var(--dark)">Hedefine göre<br>senin programın.</h2>
@@ -448,6 +450,7 @@
       <div class="tool-item" onclick="switchTool('period',this)"><span class="tool-icon">🌸</span> Regl Takibi</div>
     </div>
 
+    <!-- SU TAKİBİ -->
     <div class="tool-panel active" id="panel-water">
       <div class="tool-panel-title">💧 Günlük Su Takibi</div>
       <p style="opacity:0.5;font-size:14px">Bir bardak içtikçe işaretle. Hedef: 8 bardak / gün</p>
@@ -456,29 +459,31 @@
       <button onclick="resetWater()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:var(--cream);padding:10px 20px;border-radius:30px;cursor:pointer;font-size:13px;width:fit-content">Sıfırla</button>
     </div>
 
+    <!-- KALORİ HESABI -->
     <div class="tool-panel" id="panel-calorie">
       <div class="tool-panel-title">🔥 Kalori Hesabı</div>
       <div class="calorie-rings">
         <div class="ring-wrap">
           <svg width="120" height="120" class="svg-ring">
             <circle class="ring-track" cx="60" cy="60" r="50" stroke-width="10"/>
-            <circle class="ring-fill" cx="60" cy="60" r="50" stroke-width="10" stroke="var(--lime)" stroke-dasharray="314" stroke-dashoffset="110" id="calorieRing"/>
+            <circle class="ring-fill" cx="60" cy="60" r="50" stroke-width="10" stroke="var(--lime)" stroke-dasharray="314" stroke-dashoffset="314" id="calorieRing"/>
           </svg>
-          <div class="ring-label"><strong style="color:var(--lime);font-size:18px" id="calorieLeft">1640</strong><br>kalan kcal</div>
+          <div class="ring-label"><strong style="font-size:18px" id="calorieLeft">2200</strong><br><span style="opacity:0.5">kalan kcal</span></div>
         </div>
         <div class="macros-bars">
-          <div class="macro-row"><label><span>Protein</span><span>85g / 120g</span></label><div class="macro-bar-bg"><div class="macro-bar-fill mb-protein" style="width:71%"></div></div></div>
-          <div class="macro-row"><label><span>Karbonhidrat</span><span>180g / 250g</span></label><div class="macro-bar-bg"><div class="macro-bar-fill mb-carbs" style="width:72%"></div></div></div>
-          <div class="macro-row"><label><span>Yağ</span><span>40g / 65g</span></label><div class="macro-bar-bg"><div class="macro-bar-fill mb-fat" style="width:62%"></div></div></div>
+          <div class="macro-row"><label><span>Protein</span><span id="proteinLabel">0g / 120g</span></label><div class="macro-bar-bg"><div class="macro-bar-fill mb-protein" id="proteinBar" style="width:0%"></div></div></div>
+          <div class="macro-row"><label><span>Karbonhidrat</span><span id="carbLabel">0g / 250g</span></label><div class="macro-bar-bg"><div class="macro-bar-fill mb-carbs" id="carbBar" style="width:0%"></div></div></div>
+          <div class="macro-row"><label><span>Yağ</span><span id="fatLabel">0g / 65g</span></label><div class="macro-bar-bg"><div class="macro-bar-fill mb-fat" id="fatBar" style="width:0%"></div></div></div>
         </div>
       </div>
       <div class="add-food">
-        <input type="text" id="foodInput" placeholder="Yemek ekle (örn: 1 elma, 100g tavuk...)"/>
+        <input type="text" id="foodInput" placeholder="Yemek ekle (örn: 2 yumurta, 1 tabak pilav, 100g tavuk...)" onkeydown="if(event.key==='Enter')addFood()"/>
         <button onclick="addFood()">+</button>
       </div>
-      <div id="foodLog" style="font-size:13px;opacity:0.5;display:flex;flex-direction:column;gap:6px"></div>
+      <div id="foodLog" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent"></div>
     </div>
 
+    <!-- UYKU TAKİBİ -->
     <div class="tool-panel" id="panel-sleep">
       <div class="tool-panel-title">😴 Uyku Takibi</div>
       <div style="display:flex;gap:20px;align-items:center">
@@ -495,54 +500,28 @@
       </div>
     </div>
 
-    <!-- 🌸 REGL TAKİBİ -->
+    <!-- REGL TAKİBİ -->
     <div class="tool-panel" id="panel-period">
       <div class="tool-panel-title">🌸 Regl Takibi</div>
       <div class="period-result-box" id="periodResultBox">
         <div id="periodPhaseBadge" class="period-phase-badge"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px">
-          <div>
-            <div style="font-size:11px;opacity:0.4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Sonraki Regl</div>
-            <div id="periodNextDate" style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:#f472b6"></div>
-          </div>
-          <div>
-            <div style="font-size:11px;opacity:0.4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Kalan Süre</div>
-            <div id="periodDaysLeft" style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--lime)"></div>
-          </div>
-          <div>
-            <div style="font-size:11px;opacity:0.4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Ovülasyon Tahmini</div>
-            <div id="periodOvulation" style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:#34d399"></div>
-          </div>
-          <div>
-            <div style="font-size:11px;opacity:0.4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Döngü Günü</div>
-            <div id="periodCycleDay" style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:#a78bf7"></div>
-          </div>
+          <div><div style="font-size:11px;opacity:0.4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Sonraki Regl</div><div id="periodNextDate" style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:#f472b6"></div></div>
+          <div><div style="font-size:11px;opacity:0.4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Kalan Süre</div><div id="periodDaysLeft" style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--lime)"></div></div>
+          <div><div style="font-size:11px;opacity:0.4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Ovülasyon Tahmini</div><div id="periodOvulation" style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:#34d399"></div></div>
+          <div><div style="font-size:11px;opacity:0.4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Döngü Günü</div><div id="periodCycleDay" style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:#a78bf7"></div></div>
         </div>
         <div style="margin-top:16px;font-size:11px;opacity:0.4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Döngü Görünümü</div>
         <div class="period-cycle-visual" id="periodCycleVisual"></div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;opacity:0.35;margin-top:6px">
-          <span>🩸 Regl (1-5)</span><span>🌱 Foliküler (6-13)</span><span>🌟 Ovülasyon (14)</span><span>🌙 Luteal (15-28)</span>
-        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;opacity:0.35;margin-top:6px"><span>🩸 Regl (1-5)</span><span>🌱 Foliküler (6-13)</span><span>🌟 Ovülasyon (14)</span><span>🌙 Luteal (15-28)</span></div>
       </div>
       <div>
         <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:0.4;margin-bottom:14px">Veri Gir / Güncelle</div>
         <div class="period-inputs">
-          <div class="period-input-group">
-            <label>Son Regl Tarihi</label>
-            <input type="date" id="periodLastDate" class="period-input">
-          </div>
-          <div class="period-input-group">
-            <label>Döngü Uzunluğu (gün)</label>
-            <input type="number" id="periodCycleLen" class="period-input" value="28" min="21" max="45">
-          </div>
-          <div class="period-input-group">
-            <label>Regl Süresi (gün)</label>
-            <input type="number" id="periodDuration" class="period-input" value="5" min="2" max="10">
-          </div>
-          <div class="period-input-group">
-            <label>Notlar</label>
-            <input type="text" id="periodNotes" class="period-input" placeholder="ağrılı, düzensiz...">
-          </div>
+          <div class="period-input-group"><label>Son Regl Tarihi</label><input type="date" id="periodLastDate" class="period-input"></div>
+          <div class="period-input-group"><label>Döngü Uzunluğu (gün)</label><input type="number" id="periodCycleLen" class="period-input" value="28" min="21" max="45"></div>
+          <div class="period-input-group"><label>Regl Süresi (gün)</label><input type="number" id="periodDuration" class="period-input" value="5" min="2" max="10"></div>
+          <div class="period-input-group"><label>Notlar</label><input type="text" id="periodNotes" class="period-input" placeholder="ağrılı, düzensiz..."></div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap">
           <button class="period-save-btn" onclick="savePeriod()">🌸 Kaydet &amp; Hesapla</button>
@@ -765,6 +744,15 @@ async function updateNav() {
         </button>
         <button class="nav-logout" onclick="window.location.href='/logout'">Çıkış →</button>`;
       renderProfileCard(data.profile, data.username);
+      // Bugünkü yemekleri yükle
+      if (data.foods && data.foods.length > 0) {
+        data.foods.forEach(f => {
+          foods.push({ id: f.id, name: f.name, kcal: f.kcal, portion: '', source: 'db' });
+          totalKcal += f.kcal;
+        });
+        renderFoodLog();
+        updateCalorieUI();
+      }
     } else {
       area.innerHTML = `<button class="nav-cta" onclick="window.location.href='/login-page'">🔑 Giriş Yap</button>`;
     }
@@ -777,7 +765,6 @@ function renderProfileCard(profile, username) {
   const progLabel = { 'kilo-kaybi':'🔥 Kilo Kaybı', 'kilo-alimi':'💪 Kilo Alımı', 'kilo-kontrolu':'⚖️ Kilo Kontrolü', 'saglikli':'🥗 Sağlıklı Beslenme' };
   const notesProgMatch = (p.notes||'').match(/Program:\s*(\S+)/);
   const currentProg = notesProgMatch ? progLabel[notesProgMatch[1]] || '' : '';
-
   card.innerHTML = `
     <div class="psc-header">
       <div class="psc-avatar">👤</div>
@@ -788,22 +775,12 @@ function renderProfileCard(profile, username) {
     </div>
     <div class="psc-fields">
       <div class="psc-row">
-        <div class="psc-group">
-          <label>Ad</label>
-          <input class="psc-input" id="psc-first-name" type="text" placeholder="Adın" value="${p.first_name||''}">
-        </div>
-        <div class="psc-group">
-          <label>Soyad</label>
-          <input class="psc-input" id="psc-last-name" type="text" placeholder="Soyadın" value="${p.last_name||''}">
-        </div>
+        <div class="psc-group"><label>Ad</label><input class="psc-input" id="psc-first-name" type="text" placeholder="Adın" value="${p.first_name||''}"></div>
+        <div class="psc-group"><label>Soyad</label><input class="psc-input" id="psc-last-name" type="text" placeholder="Soyadın" value="${p.last_name||''}"></div>
       </div>
       <div class="psc-row">
-        <div class="psc-group">
-          <label>Yaş</label>
-          <input class="psc-input" id="psc-age" type="number" placeholder="örn: 24" value="${p.age||''}" min="10" max="100">
-        </div>
-        <div class="psc-group">
-          <label>Cinsiyet</label>
+        <div class="psc-group"><label>Yaş</label><input class="psc-input" id="psc-age" type="number" placeholder="örn: 24" value="${p.age||''}" min="10" max="100"></div>
+        <div class="psc-group"><label>Cinsiyet</label>
           <select class="psc-select" id="psc-gender">
             <option value="">Seç...</option>
             <option value="kadin" ${p.gender==='kadin'?'selected':''}>Kadın</option>
@@ -813,22 +790,12 @@ function renderProfileCard(profile, username) {
         </div>
       </div>
       <div class="psc-row">
-        <div class="psc-group">
-          <label>Boy (cm)</label>
-          <input class="psc-input" id="psc-height" type="number" placeholder="örn: 168" value="${p.height_cm||''}" min="100" max="250">
-        </div>
-        <div class="psc-group">
-          <label>Kilo (kg)</label>
-          <input class="psc-input" id="psc-weight" type="number" placeholder="örn: 65" value="${p.current_weight||''}" min="30" max="250">
-        </div>
+        <div class="psc-group"><label>Boy (cm)</label><input class="psc-input" id="psc-height" type="number" placeholder="örn: 168" value="${p.height_cm||''}" min="100" max="250"></div>
+        <div class="psc-group"><label>Kilo (kg)</label><input class="psc-input" id="psc-weight" type="number" placeholder="örn: 65" value="${p.current_weight||''}" min="30" max="250"></div>
       </div>
       <div class="psc-row">
-        <div class="psc-group">
-          <label>Hedef Kilo (kg)</label>
-          <input class="psc-input" id="psc-target" type="number" placeholder="örn: 58" value="${p.target_weight||''}" min="30" max="250">
-        </div>
-        <div class="psc-group">
-          <label>Aktivite</label>
+        <div class="psc-group"><label>Hedef Kilo (kg)</label><input class="psc-input" id="psc-target" type="number" placeholder="örn: 58" value="${p.target_weight||''}" min="30" max="250"></div>
+        <div class="psc-group"><label>Aktivite</label>
           <select class="psc-select" id="psc-activity">
             <option value="sedanter" ${p.activity_level==='sedanter'?'selected':''}>Hareketsiz</option>
             <option value="hafif" ${p.activity_level==='hafif'?'selected':''}>Hafif aktif</option>
@@ -837,10 +804,7 @@ function renderProfileCard(profile, username) {
           </select>
         </div>
       </div>
-      <div class="psc-group">
-        <label>Alerji / Notlar</label>
-        <input class="psc-input" id="psc-notes" type="text" placeholder="örn: laktoz intoleransım var..." value="${(p.notes||'').replace(/\s*\|?\s*Program:\s*\S+/,'').trim()}">
-      </div>
+      <div class="psc-group"><label>Alerji / Notlar</label><input class="psc-input" id="psc-notes" type="text" placeholder="örn: laktoz intoleransım var..." value="${(p.notes||'').replace(/\s*\|?\s*Program:\s*\S+/,'').trim()}"></div>
     </div>
     <button class="psc-save-btn" onclick="saveProfileCard()">💾 Profili Kaydet</button>
     <div class="psc-save-ok" id="pscSaveOk">✅ Profil kaydedildi! FitBot artık seni tanıyor.</div>
@@ -898,68 +862,171 @@ function switchTool(id,el){
   document.getElementById('panel-'+id).classList.add('active');
 }
 
-// ── FOOD LOG ─────────────────────────────────────────────────────
-const foods = []; let totalKcal = 0;
+// ── FOOD LOG (YENİ SİSTEM) ───────────────────────────────────────
+const foods = [];
+let totalKcal = 0;
+let totalProtein = 0, totalCarb = 0, totalFat = 0;
 
 async function addFood() {
   const inp = document.getElementById('foodInput');
-  const v = inp.value.trim(); if (!v) return;
-  const btn = inp.nextElementSibling; btn.textContent = '...'; btn.disabled = true;
+  const v = inp.value.trim();
+  if (!v) return;
+
+  const btn = inp.nextElementSibling;
+  btn.textContent = '⏳';
+  btn.disabled = true;
+  inp.disabled = true;
+
   try {
-    const res = await fetch('/kalori-ara', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ food: v }) });
+    const res = await fetch('/kalori-ara', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ food: v })
+    });
     const data = await res.json();
+
     if (!data.found) {
-      alert(data.message || 'Yemek bulunamadı.');
+      showFoodError(data.message || 'Yemek bulunamadı.');
       return;
     }
-    const kcal = data.portion_kcal || data.kcal_per_100g || 0;
-    const portion = data.portion || '100g';
-    const id = data.id || null;
-    foods.push({ id, name: data.name, kcal, portion });
-    totalKcal += kcal;
+
+    clearFoodError();
+
+    const displayKcal = data.portion_kcal || data.kcal_per_100g || 0;
+
+    foods.push({
+      id:      data.id || null,
+      name:    data.name,
+      kcal:    displayKcal,
+      portion: data.portion || '',
+      protein: data.protein || null,
+      carb:    data.carb || null,
+      fat:     data.fat || null,
+      source:  data.source || 'ai'
+    });
+
+    totalKcal += displayKcal;
+    if (data.protein) totalProtein += data.protein;
+    if (data.carb)    totalCarb    += data.carb;
+    if (data.fat)     totalFat     += data.fat;
+
     inp.value = '';
     renderFoodLog();
     updateCalorieUI();
+    updateMacroBars();
+
   } catch (err) {
-    alert('API bağlantı hatası.');
+    showFoodError('Sunucuya bağlanılamadı. İnternet bağlantını kontrol et.');
   } finally {
-    btn.textContent = '+'; btn.disabled = false;
+    btn.textContent = '+';
+    btn.disabled = false;
+    inp.disabled = false;
+    inp.focus();
   }
 }
 
-function renderFoodLog() {
-  const log = document.getElementById('foodLog');
-  if (!foods.length) { log.innerHTML = ''; return; }
-  log.innerHTML = foods.map((f, i) => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px">
-      <span style="font-size:13px">${f.name} <span style="opacity:0.4;font-size:11px">(${f.portion})</span></span>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="color:var(--lime);font-size:13px">${f.kcal} kcal</span>
-        <button onclick="removeFood(${i})" style="background:none;border:none;color:rgba(255,255,255,0.25);cursor:pointer;font-size:15px;padding:2px 4px;transition:color 0.2s;line-height:1" onmouseover="this.style.color='#e74c3c'" onmouseout="this.style.color='rgba(255,255,255,0.25)'">✕</button>
-      </div>
-    </div>
-  `).join('');
+function showFoodError(msg) {
+  let errEl = document.getElementById('foodError');
+  if (!errEl) {
+    errEl = document.createElement('div');
+    errEl.id = 'foodError';
+    errEl.style.cssText = 'font-size:12px;color:#f472b6;margin-top:6px;padding:8px 12px;background:rgba(244,114,182,0.08);border-radius:8px;border:1px solid rgba(244,114,182,0.2)';
+    document.getElementById('foodInput').parentElement.insertAdjacentElement('afterend', errEl);
+  }
+  errEl.textContent = '⚠️ ' + msg;
+  errEl.style.display = 'block';
+}
+
+function clearFoodError() {
+  const errEl = document.getElementById('foodError');
+  if (errEl) errEl.style.display = 'none';
 }
 
 async function removeFood(index) {
   const food = foods[index];
   totalKcal -= food.kcal;
+  if (food.protein) totalProtein -= food.protein;
+  if (food.carb)    totalCarb    -= food.carb;
+  if (food.fat)     totalFat     -= food.fat;
   foods.splice(index, 1);
-  // Backend'de de sil (giriş yapılmışsa)
+
   if (food.id) {
     try {
-      await fetch('/yemek-sil', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: food.id }) });
+      await fetch('/yemek-sil', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: food.id })
+      });
     } catch (e) {}
   }
   renderFoodLog();
   updateCalorieUI();
+  updateMacroBars();
+}
+
+function renderFoodLog() {
+  const log = document.getElementById('foodLog');
+  if (!foods.length) { log.innerHTML = ''; return; }
+
+  log.innerHTML = foods.map((f, i) => {
+    const sourceBadge = f.source === 'usda'
+      ? '<span style="font-size:9px;background:rgba(79,195,247,0.15);color:#4fc3f7;padding:1px 6px;border-radius:10px;margin-left:4px">USDA</span>'
+      : f.source === 'db'
+      ? ''
+      : '<span style="font-size:9px;background:rgba(181,229,80,0.12);color:var(--lime);padding:1px 6px;border-radius:10px;margin-left:4px">AI</span>';
+
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;
+        padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px;
+        border:1px solid rgba(255,255,255,0.06)">
+        <div>
+          <div style="font-size:13px;display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+            <span>${f.name}</span>${sourceBadge}
+          </div>
+          ${f.portion ? `<div style="font-size:11px;opacity:0.4;margin-top:1px">${f.portion}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+          <span style="color:var(--lime);font-size:14px;font-weight:700">${Math.round(f.kcal)} kcal</span>
+          <button onclick="removeFood(${i})"
+            style="background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;
+              font-size:16px;padding:2px 4px;line-height:1"
+            onmouseover="this.style.color='#e74c3c'"
+            onmouseout="this.style.color='rgba(255,255,255,0.2)'">✕</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function updateCalorieUI() {
-  const kalan = Math.max(0, 2200 - totalKcal);
-  document.getElementById('calorieLeft').textContent = kalan;
-  const offset = Math.max(0, 314 - 314 * Math.min(totalKcal / 2200, 1));
-  document.getElementById('calorieRing').style.strokeDashoffset = offset;
+  const HEDEF = 2200;
+  const kalan = Math.max(0, HEDEF - totalKcal);
+  const leftEl = document.getElementById('calorieLeft');
+  if (leftEl) {
+    leftEl.textContent = Math.round(kalan);
+    leftEl.style.color = totalKcal > HEDEF ? '#f26b2e' : totalKcal > HEDEF * 0.85 ? '#f5c842' : 'var(--lime)';
+  }
+  const ratio = Math.min(totalKcal / HEDEF, 1);
+  const offset = Math.round(314 - 314 * ratio);
+  const ringEl = document.getElementById('calorieRing');
+  if (ringEl) {
+    ringEl.style.strokeDashoffset = offset;
+    ringEl.style.stroke = totalKcal > HEDEF ? '#f26b2e' : totalKcal > HEDEF * 0.85 ? '#f5c842' : 'var(--lime)';
+  }
+}
+
+function updateMacroBars() {
+  const pb = document.getElementById('proteinBar');
+  const cb = document.getElementById('carbBar');
+  const fb = document.getElementById('fatBar');
+  const pl = document.getElementById('proteinLabel');
+  const cl = document.getElementById('carbLabel');
+  const fl = document.getElementById('fatLabel');
+  if (pb) pb.style.width = Math.min(totalProtein / 1.2, 100) + '%';
+  if (cb) cb.style.width = Math.min(totalCarb / 2.5, 100) + '%';
+  if (fb) fb.style.width = Math.min(totalFat / 0.65, 100) + '%';
+  if (pl) pl.textContent = `${Math.round(totalProtein)}g / 120g`;
+  if (cl) cl.textContent = `${Math.round(totalCarb)}g / 250g`;
+  if (fl) fl.textContent = `${Math.round(totalFat)}g / 65g`;
 }
 
 // ── SLEEP ────────────────────────────────────────────────────────
@@ -977,16 +1044,12 @@ async function savePeriod(){
   const cycleLen = parseInt(document.getElementById('periodCycleLen').value)||28;
   const duration = parseInt(document.getElementById('periodDuration').value)||5;
   const notes    = document.getElementById('periodNotes').value;
-
   if(!lastDate){ alert('Lütfen son regl tarihini gir!'); return; }
-
   calcPeriodDisplay(lastDate, cycleLen, duration);
-
   try{
     await fetch('/regl-kaydet',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({last_period_date:lastDate,cycle_length:cycleLen,period_duration:duration,notes})});
   }catch(e){}
-
   const msg=document.getElementById('periodSaveMsg');
   msg.style.display='block';
   setTimeout(()=>msg.style.display='none',2500);
@@ -997,29 +1060,23 @@ function calcPeriodDisplay(lastDate, cycleLen, duration){
   const last    = new Date(lastDate);
   const daysSince = Math.floor((today - last) / 86400000);
   const cycleDay  = (daysSince % cycleLen) + 1;
-
   const daysUntilNext = cycleLen - (daysSince % cycleLen);
   const nextDate = new Date(today); nextDate.setDate(today.getDate() + daysUntilNext);
-
   const ovDay   = cycleLen - 14;
   const daysUntilOv = ovDay - (daysSince % cycleLen);
   const ovDate  = new Date(today); ovDate.setDate(today.getDate() + (daysUntilOv > 0 ? daysUntilOv : daysUntilOv + cycleLen));
-
   let phase, phaseColor, phaseIcon;
   if(cycleDay <= duration){ phase='Regl Dönemi'; phaseColor='rgba(244,114,182,0.2)'; phaseIcon='🩸'; }
   else if(cycleDay <= 13){ phase='Foliküler Faz'; phaseColor='rgba(251,191,36,0.15)'; phaseIcon='🌱'; }
   else if(cycleDay <= 16){ phase='Ovülasyon'; phaseColor='rgba(34,197,94,0.15)'; phaseIcon='🌟'; }
   else { phase='Luteal Faz'; phaseColor='rgba(139,92,246,0.15)'; phaseIcon='🌙'; }
-
   document.getElementById('periodPhaseBadge').innerHTML = `<span style="font-size:18px">${phaseIcon}</span> ${phase} · Gün ${cycleDay}`;
   document.getElementById('periodPhaseBadge').style.cssText = `background:${phaseColor};border:1px solid rgba(255,255,255,0.1);`;
   document.getElementById('periodPhaseBadge').className = 'period-phase-badge';
-
   document.getElementById('periodNextDate').textContent = nextDate.toLocaleDateString('tr-TR',{day:'numeric',month:'long'});
   document.getElementById('periodDaysLeft').textContent = daysUntilNext + ' gün';
   document.getElementById('periodOvulation').textContent = ovDate.toLocaleDateString('tr-TR',{day:'numeric',month:'long'});
   document.getElementById('periodCycleDay').textContent = cycleDay + ' / ' + cycleLen;
-
   const visual = document.getElementById('periodCycleVisual');
   visual.innerHTML = '';
   for(let i=1; i<=cycleLen; i++){
@@ -1033,7 +1090,6 @@ function calcPeriodDisplay(lastDate, cycleLen, duration){
     bar.title = `Gün ${i}`;
     visual.appendChild(bar);
   }
-
   document.getElementById('periodResultBox').style.display='block';
 }
 
@@ -1154,69 +1210,26 @@ function renderExLog(){
 // ── WORKOUT MODAL ────────────────────────────────────────────────
 function startWorkout(name) {
   const programs = {
-    'Sabah Enerjisi': {
-      color: 'linear-gradient(135deg,#1a6b3a,#2d9e57)',
-      emoji: '☀️',
-      rows: [{
-        odak: 'Metabolizma Hızlandırma',
-        hareketler: '3x20 Jumping Jacks,\n3x15 Squat,\n3x12 Lunge,\n30sn Plank',
-        ipucu: 'Hareketleri akıcı ve nefes kontrolüyle yap.',
-        sure: '20 dk'
-      }]
-    },
-    'Yağ Yakıcı HIIT': {
-      color: 'linear-gradient(135deg,#f26b2e,#f5a623)',
-      emoji: '🔥',
-      rows: [{
-        odak: 'Maksimum Kalori Yakımı',
-        hareketler: '4x10 Burpees,\n4x20 Mountain Climbers,\n4x30sn High Knees',
-        ipucu: 'Dinlenme sürelerini 30 saniyeyi geçirme.',
-        sure: '30 dk'
-      }]
-    },
-    'Güç & Kas': {
-      color: 'linear-gradient(135deg,#0e1a10,#2a3d2c)',
-      emoji: '💪',
-      rows: [{
-        odak: 'Hipertrofi (Kas Gelişimi)',
-        hareketler: '4x10 Şınav,\n4x12 Bulgarian Split Squat,\n3x15 Dips,\n3xMax Plank',
-        ipucu: 'Formu bozmadan, kası hissederek yavaş uygula.',
-        sure: '45 dk'
-      }]
-    },
-    'Atletizm Pro': {
-      color: 'linear-gradient(135deg,#1a1a4a,#2a3a7a)',
-      emoji: '🏆',
-      rows: [{
-        odak: 'Patlayıcı Güç & Kondisyon',
-        hareketler: '5x10 Jump Squat,\n4x12 Lateral Bounds,\n3x10 Diamond Push-up',
-        ipucu: 'Sıçramalarda parmak ucuna yumuşak iniş yap.',
-        sure: '60 dk'
-      }]
-    }
+    'Sabah Enerjisi': { color:'linear-gradient(135deg,#1a6b3a,#2d9e57)', emoji:'☀️', rows:[{odak:'Metabolizma Hızlandırma',hareketler:'3x20 Jumping Jacks,\n3x15 Squat,\n3x12 Lunge,\n30sn Plank',ipucu:'Hareketleri akıcı ve nefes kontrolüyle yap.',sure:'20 dk'}] },
+    'Yağ Yakıcı HIIT': { color:'linear-gradient(135deg,#f26b2e,#f5a623)', emoji:'🔥', rows:[{odak:'Maksimum Kalori Yakımı',hareketler:'4x10 Burpees,\n4x20 Mountain Climbers,\n4x30sn High Knees',ipucu:'Dinlenme sürelerini 30 saniyeyi geçirme.',sure:'30 dk'}] },
+    'Güç & Kas': { color:'linear-gradient(135deg,#0e1a10,#2a3d2c)', emoji:'💪', rows:[{odak:'Hipertrofi (Kas Gelişimi)',hareketler:'4x10 Şınav,\n4x12 Bulgarian Split Squat,\n3x15 Dips,\n3xMax Plank',ipucu:'Formu bozmadan, kası hissederek yavaş uygula.',sure:'45 dk'}] },
+    'Atletizm Pro': { color:'linear-gradient(135deg,#1a1a4a,#2a3a7a)', emoji:'🏆', rows:[{odak:'Patlayıcı Güç & Kondisyon',hareketler:'5x10 Jump Squat,\n4x12 Lateral Bounds,\n3x10 Diamond Push-up',ipucu:'Sıçramalarda parmak ucuna yumuşak iniş yap.',sure:'60 dk'}] }
   };
-
-  const prog = programs[name];
-  if (!prog) return;
-
+  const prog = programs[name]; if (!prog) return;
   document.getElementById('workoutModalTitle').textContent = prog.emoji + ' ' + name;
   document.getElementById('workoutModalHeader').style.background = prog.color;
-
-  const tbody = document.getElementById('workoutModalTable');
-  tbody.innerHTML = prog.rows.map(r => `
+  document.getElementById('workoutModalTable').innerHTML = prog.rows.map(r => `
     <tr>
       <td style="padding:20px 18px;font-weight:700;font-size:14px;color:var(--cream);border-bottom:1px solid rgba(255,255,255,0.06);vertical-align:middle;line-height:1.5">${r.odak.replace(/\n/g,'<br>')}</td>
       <td style="padding:20px 18px;font-size:13px;color:var(--cream);opacity:0.85;border-bottom:1px solid rgba(255,255,255,0.06);vertical-align:middle;line-height:1.8">${r.hareketler.replace(/\n/g,'<br>')}</td>
       <td style="padding:20px 18px;font-size:13px;color:var(--lime);border-bottom:1px solid rgba(255,255,255,0.06);vertical-align:middle;line-height:1.5">${r.ipucu}</td>
       <td style="padding:20px 18px;font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--lime);border-bottom:1px solid rgba(255,255,255,0.06);text-align:center;vertical-align:middle">${r.sure}</td>
-    </tr>
-  `).join('');
-
+    </tr>`).join('');
   document.getElementById('workoutModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
-// ── KALORI YAKMA HESABI ──────────────────────────────────────────
+// ── KALORI YAKMA ─────────────────────────────────────────────────
 function calcKcal(){
   const met=parseFloat(document.getElementById('kcalType').value);
   const wt=parseFloat(document.getElementById('kcalWeight').value);
