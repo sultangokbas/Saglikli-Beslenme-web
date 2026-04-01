@@ -180,7 +180,8 @@ class DatabaseManager:
         values.append(user_id)
         try:
             with self.get_connection() as conn:
-                conn.execute(
+                c = conn.cursor()  # DÜZELTME: conn.execute → c.execute
+                c.execute(
                     f"UPDATE user_profiles SET {', '.join(fields)} WHERE user_id=%s", values
                 )
                 conn.commit()
@@ -363,8 +364,8 @@ class DatabaseManager:
             print(f"Period log hatası: {e}")
             return False
 
-
-def get_latest_period_log(self, user_id):
+    # DÜZELTME: Metot sınıfın içine alındı (girinti düzeltildi)
+    def get_latest_period_log(self, user_id):
         with self.get_connection() as conn:
             c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             c.execute(
@@ -373,7 +374,7 @@ def get_latest_period_log(self, user_id):
             row = c.fetchone()
         return dict(row) if row else None
 
-    # ─── ADMİN ───────────────────────────────────────────────────────────────────
+    # ─── ADMİN ───────────────────────────────────────────────────────────────
 
     def get_all_users(self):
         with self.get_connection() as conn:

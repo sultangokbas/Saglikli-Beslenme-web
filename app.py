@@ -185,8 +185,9 @@ def cevap_ver():
     return jsonify({"reply": reply})
 
 
-@app.route('/ogün-plani', methods=['POST'])
-def ogün_plani():
+# DÜZELTME: Türkçe karakter içeren route ASCII'ye çevrildi
+@app.route('/ogun-plani', methods=['POST'])
+def ogun_plani():
     if 'user_id' not in session:
         return jsonify({"login_required": True, "reply": "Giris yapmalısin!"}), 401
     user_id = session['user_id']
@@ -219,14 +220,14 @@ def tarif_oner():
     notes = profile.get('notes', '') if profile else ''
     total_kcal = sum(f['kcal'] for f in foods)
     kalan_kcal = max(0, 2200 - int(total_kcal))
-    ogün_tipi = request.json.get("meal_type", "aksam yemegi")
+    ogun_tipi = request.json.get("meal_type", "aksam yemegi")
     prompt = (f"Bugun {int(total_kcal)} kcal yedi, kalan: {kalan_kcal} kcal\n"
-              f"Ogun: {ogün_tipi}\nYasak malzeme: {notes}\n\n"
+              f"Ogun: {ogun_tipi}\nYasak malzeme: {notes}\n\n"
               f"2 kisa tarif oner (isim, kalori, malzeme, 3 adim).")
     reply = call_groq([{"role": "user", "content": prompt}],
                       "Turkce pratik tarif oneren diyetisyensin.",
                       max_tokens=1000)
-    db.save_chat_message(user_id, "user", f"{ogün_tipi} tarif onerisi istedi")
+    db.save_chat_message(user_id, "user", f"{ogun_tipi} tarif onerisi istedi")
     db.save_chat_message(user_id, "assistant", reply)
     return jsonify({"reply": reply})
 
