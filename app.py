@@ -462,19 +462,26 @@ def favicon():
     return send_from_directory(app.root_path, 'avokado-ikon.png', mimetype='image/png')
 
 
-@app.route('/admin')
+@app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
     admin_password = os.environ.get("ADMIN_PASSWORD", "fitlife-admin-2026")
-    if request.args.get("pw") != admin_password:
+    if request.method == 'POST':
+        pw = request.form.get('pw')
+        if pw == admin_password:
+            session['admin'] = True
+            return redirect(url_for('admin_panel'))
+        else:
+            return jsonify({'error': 'Yanlış şifre'}), 401
+
+    # GET request
+    if not session.get('admin'):
         return """
-        <div style='font-family:sans-serif;padding:40px;background:#0f172a;color:#e2e8f0;min-height:100vh'>
+        <form method="post">
           <h2>🔐 Admin Paneli</h2>
-          <input type='password' id='pw' placeholder='Şifre' style='padding:8px;font-size:16px;background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px'>
-          <button onclick='location.href="/admin?pw="+document.getElementById("pw").value'
-            style='padding:8px 16px;margin-left:8px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer'>
-            Giriş
-          </button>
-        </div>""", 401
+          <input type="password" name="pw" placeholder="Şifre">
+          <button type="submit">Giriş</button>
+        </form>
+        """, 401
     users = db.get_all_users()
     rows = "".join(
         f"<tr><td>{u['id']}</td><td>{u['username']}</td><td>{u['email']}</td></tr>"
@@ -494,6 +501,7 @@ def admin_panel():
         <tr><th>ID</th><th>Kullanıcı Adı</th><th>Email</th></tr>
         {rows}
       </table>
+      <a href="/logout">Çıkış</a>
     </body></html>"""
 
 
