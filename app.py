@@ -617,7 +617,7 @@ def admin_panel():
         else:
             return render_template('admin.html', error="Şifre hatalı!", logged_in=False)
     if not session.get('admin'):
-        return render_template('admin.html', logged_in=False)
+        return render_template('admin.html', logged_in=False, settings={})
     # İstatistikler
     stats = {
         "user_count":    db.get_user_count(),
