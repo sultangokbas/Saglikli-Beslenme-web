@@ -512,7 +512,7 @@ def generate_blog_post():
     category_map.update({t: 'egzersiz' for t in topics_egzersiz})
     category = category_map.get(topic, 'genel')
 
-    emoji_map = {'beslenme': '🥗', 'egzersiz': '💪', 'genel': '🌿'}
+    emoji_map = {'beslenme': '🫐', 'egzersiz': '💪', 'genel': '😽'}
     emoji = emoji_map.get(category, '🌿')
 
     system = """Sen FitLife AI için Türkçe blog yazıları yazan sağlıklı yaşam uzmanısın.
