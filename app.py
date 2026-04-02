@@ -608,7 +608,7 @@ def admin_required(f):
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
-    admin_password = os.environ.get("ADMIN_PASSWORD", "fitlife-admin-2026")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "Sultangokbasadmin")
     if request.method == 'POST':
         pw = request.form.get('pw')
         if pw == admin_password:
