@@ -21,6 +21,8 @@
     --red-l:    #fef2f2;
     --amber:    #d97706;
     --amber-l:  #fffbeb;
+    --purple:   #7c3aed;
+    --purple-l: #f5f3ff;
     --sidebar:  #1e293b;
     --sidebar-t:#94a3b8;
     --radius:   10px;
@@ -28,163 +30,197 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
 
-  /* ── GİRİŞ EKRANI ── */
-  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--sidebar); }
-  .login-card { background: white; border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-  .login-logo { font-size: 32px; text-align: center; margin-bottom: 8px; }
-  .login-title { font-size: 22px; font-weight: 700; text-align: center; color: var(--text); margin-bottom: 4px; }
-  .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 32px; }
-  .login-card label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
-  .login-card input[type=password] { width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 14px; font-size: 14px; font-family: 'Inter', sans-serif; color: var(--text); outline: none; transition: border-color 0.2s; }
-  .login-card input[type=password]:focus { border-color: var(--accent); }
-  .login-btn { width: 100%; background: var(--accent); color: white; border: none; border-radius: var(--radius); padding: 13px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 16px; font-family: 'Inter', sans-serif; transition: background 0.2s; }
-  .login-btn:hover { background: #1d4ed8; }
-  .error-msg { background: var(--red-l); color: var(--red); border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+  /* ── GİRİŞ ── */
+  .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--sidebar); }
+  .login-card { background:white; border-radius:16px; padding:48px 40px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+  .login-logo { font-size:32px; text-align:center; margin-bottom:8px; }
+  .login-title { font-size:22px; font-weight:700; text-align:center; color:var(--text); margin-bottom:4px; }
+  .login-sub { font-size:13px; color:var(--muted); text-align:center; margin-bottom:32px; }
+  .login-card label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:6px; }
+  .login-card input[type=password] { width:100%; border:1.5px solid var(--border); border-radius:var(--radius); padding:12px 14px; font-size:14px; font-family:'Inter',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; }
+  .login-card input[type=password]:focus { border-color:var(--accent); }
+  .login-btn { width:100%; background:var(--accent); color:white; border:none; border-radius:var(--radius); padding:13px; font-size:14px; font-weight:600; cursor:pointer; margin-top:16px; font-family:'Inter',sans-serif; transition:background 0.2s; }
+  .login-btn:hover { background:#1d4ed8; }
+  .error-msg { background:var(--red-l); color:var(--red); border:1px solid #fecaca; border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:16px; }
 
   /* ── LAYOUT ── */
-  .admin-layout { display: flex; min-height: 100vh; }
+  .admin-layout { display:flex; min-height:100vh; }
 
   /* ── SIDEBAR ── */
-  .sidebar { width: 240px; background: var(--sidebar); flex-shrink: 0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; }
-  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
-  .sidebar-logo .logo-text { font-size: 18px; font-weight: 700; color: white; }
-  .sidebar-logo .logo-badge { font-size: 10px; background: var(--accent); color: white; padding: 2px 8px; border-radius: 20px; margin-left: 6px; font-weight: 600; }
-  .sidebar-logo .logo-sub { font-size: 11px; color: var(--sidebar-t); margin-top: 2px; }
-  .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
-  .nav-section-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #475569; padding: 12px 8px 6px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--sidebar-t); cursor: pointer; transition: all 0.15s; font-size: 13px; font-weight: 500; border: none; background: none; width: 100%; text-align: left; text-decoration: none; }
-  .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
-  .nav-item.active { background: var(--accent); color: white; }
-  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
-  .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.07); }
-  .sidebar-footer a { display: flex; align-items: center; gap: 8px; color: #ef4444; font-size: 13px; text-decoration: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
-  .sidebar-footer a:hover { background: rgba(239,68,68,0.1); }
+  .sidebar { width:240px; background:var(--sidebar); flex-shrink:0; display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:10; }
+  .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .sidebar-logo .logo-text { font-size:18px; font-weight:700; color:white; }
+  .sidebar-logo .logo-badge { font-size:10px; background:var(--accent); color:white; padding:2px 8px; border-radius:20px; margin-left:6px; font-weight:600; }
+  .sidebar-logo .logo-sub { font-size:11px; color:var(--sidebar-t); margin-top:2px; }
+  .sidebar-nav { flex:1; padding:16px 12px; display:flex; flex-direction:column; gap:2px; overflow-y:auto; }
+  .nav-section-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#475569; padding:12px 8px 6px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:var(--sidebar-t); cursor:pointer; transition:all 0.15s; font-size:13px; font-weight:500; border:none; background:none; width:100%; text-align:left; text-decoration:none; }
+  .nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
+  .nav-item.active { background:var(--accent); color:white; }
+  .nav-item .nav-icon { font-size:16px; width:20px; text-align:center; flex-shrink:0; }
+  .sidebar-footer { padding:16px 12px; border-top:1px solid rgba(255,255,255,0.07); }
+  .sidebar-footer a { display:flex; align-items:center; gap:8px; color:#ef4444; font-size:13px; text-decoration:none; padding:8px 12px; border-radius:8px; transition:background 0.15s; }
+  .sidebar-footer a:hover { background:rgba(239,68,68,0.1); }
 
   /* ── MAIN ── */
-  .main-content { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
-  .topbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
-  .topbar-date { font-size: 12px; color: var(--muted); }
-  .page-body { padding: 32px; flex: 1; }
+  .main-content { margin-left:240px; flex:1; display:flex; flex-direction:column; min-height:100vh; }
+  .topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:5; }
+  .topbar-title { font-size:16px; font-weight:600; color:var(--text); }
+  .topbar-date { font-size:12px; color:var(--muted); }
+  .page-body { padding:32px; flex:1; }
 
   /* ── TABS ── */
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
 
   /* ── STAT CARDS ── */
-  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
-  .stat-card .sc-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-  .stat-card .sc-value { font-size: 32px; font-weight: 700; color: var(--text); line-height: 1; }
-  .stat-card .sc-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
-  .stat-card.blue  { border-top: 3px solid var(--accent); }
-  .stat-card.green { border-top: 3px solid var(--green); }
-  .stat-card.amber { border-top: 3px solid var(--amber); }
-  .stat-card.red   { border-top: 3px solid var(--red); }
+  .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px; }
+  .stat-card .sc-label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+  .stat-card .sc-value { font-size:32px; font-weight:700; color:var(--text); line-height:1; }
+  .stat-card .sc-sub { font-size:11px; color:var(--muted); margin-top:6px; }
+  .stat-card.blue   { border-top:3px solid var(--accent); }
+  .stat-card.green  { border-top:3px solid var(--green); }
+  .stat-card.amber  { border-top:3px solid var(--amber); }
+  .stat-card.red    { border-top:3px solid var(--red); }
 
   /* ── CARD ── */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; }
-  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .card-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  .card-body { padding: 20px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:20px; }
+  .card-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .card-title { font-size:14px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px; }
+  .card-body { padding:20px; }
 
-  /* ── FORM ELEMANLAR ── */
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-group.full { grid-column: 1 / -1; }
-  .form-group label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  /* ── FORM ── */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-group { display:flex; flex-direction:column; gap:5px; }
+  .form-group.full { grid-column:1/-1; }
+  .form-group label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
   .form-group input, .form-group select, .form-group textarea {
-    border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px;
-    font-size: 13px; font-family: 'Inter', sans-serif; color: var(--text);
-    outline: none; transition: border-color 0.2s; background: white;
+    border:1.5px solid var(--border); border-radius:8px; padding:9px 12px;
+    font-size:13px; font-family:'Inter',sans-serif; color:var(--text);
+    outline:none; transition:border-color 0.2s; background:white;
   }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
-  .form-group input[type=password] { letter-spacing: 2px; }
-  .form-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--accent); }
+  .form-group input[type=password] { letter-spacing:2px; }
+  .form-hint { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  /* ── MODEL SEÇİCİ ── */
+  .model-selector { border:1.5px solid var(--border); border-radius:10px; overflow:hidden; }
+  .model-option { display:flex; align-items:center; gap:12px; padding:12px 16px; cursor:pointer; transition:background 0.15s; border-bottom:1px solid var(--border); }
+  .model-option:last-child { border-bottom:none; }
+  .model-option:hover { background:#f8fafc; }
+  .model-option input[type=radio] { accent-color:var(--accent); width:16px; height:16px; flex-shrink:0; }
+  .model-option .mo-info { flex:1; }
+  .model-option .mo-name { font-size:13px; font-weight:600; color:var(--text); }
+  .model-option .mo-desc { font-size:11px; color:var(--muted); margin-top:2px; }
+  .model-option .mo-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+  .mo-free   { background:#dcfce7; color:#15803d; }
+  .mo-paid   { background:#fef3c7; color:#92400e; }
+
+  /* ── FALLBACK VİZÜEL ── */
+  .fallback-flow { display:flex; align-items:center; gap:0; margin:16px 0; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:14px 18px; overflow-x:auto; }
+  .ff-box { background:white; border:1.5px solid var(--border); border-radius:8px; padding:10px 14px; text-align:center; min-width:130px; }
+  .ff-box.primary-box { border-color:var(--accent); }
+  .ff-box.fallback-box { border-color:var(--amber); }
+  .ff-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+  .ff-model-name { font-size:11px; font-weight:600; color:var(--text); word-break:break-all; }
+  .ff-arrow { padding:0 10px; color:var(--muted); font-size:18px; flex-shrink:0; }
+  .ff-error { font-size:10px; background:var(--red-l); color:var(--red); border:1px solid #fecaca; border-radius:6px; padding:4px 8px; margin:0 6px; white-space:nowrap; }
+
+  /* ── TEST SONUÇ KUTUSU ── */
+  .test-result { border-radius:10px; padding:14px 16px; font-size:13px; margin-top:12px; display:none; }
+  .test-result.show { display:block; }
+  .test-result.ok  { background:var(--green-l); border:1px solid #bbf7d0; }
+  .test-result.err { background:var(--red-l); border:1px solid #fecaca; }
+  .test-result .tr-row { display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; }
+  .test-result .tr-row:last-child { margin-bottom:0; }
+  .test-result .tr-icon { font-size:16px; flex-shrink:0; }
+  .test-result .tr-info { flex:1; }
+  .test-result .tr-model { font-weight:600; color:var(--text); }
+  .test-result .tr-msg { color:var(--muted); font-size:12px; margin-top:2px; }
 
   /* ── TOGGLE ── */
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .toggle-row:last-child { border-bottom: none; }
-  .toggle-info .ti-label { font-size: 13px; font-weight: 500; color: var(--text); }
-  .toggle-info .ti-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 24px; cursor: pointer; transition: background 0.2s; }
-  .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
-  .toggle input:checked + .toggle-slider { background: var(--green); }
-  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+  .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border); }
+  .toggle-row:last-child { border-bottom:none; }
+  .toggle-info .ti-label { font-size:13px; font-weight:500; color:var(--text); }
+  .toggle-info .ti-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+  .toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; inset:0; background:#cbd5e1; border-radius:24px; cursor:pointer; transition:background 0.2s; }
+  .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:white; border-radius:50%; transition:transform 0.2s; }
+  .toggle input:checked + .toggle-slider { background:var(--green); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
 
   /* ── BUTONLAR ── */
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: all 0.15s; text-decoration: none; }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: #1d4ed8; }
-  .btn-success { background: var(--green); color: white; }
-  .btn-success:hover { background: #15803d; }
-  .btn-danger { background: var(--red); color: white; }
-  .btn-danger:hover { background: #b91c1c; }
-  .btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-amber { background: var(--amber); color: white; }
-  .btn-amber:hover { background: #b45309; }
-  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; font-family:'Inter',sans-serif; transition:all 0.15s; text-decoration:none; }
+  .btn-primary { background:var(--accent); color:white; }
+  .btn-primary:hover { background:#1d4ed8; }
+  .btn-success { background:var(--green); color:white; }
+  .btn-success:hover { background:#15803d; }
+  .btn-danger { background:var(--red); color:white; }
+  .btn-danger:hover { background:#b91c1c; }
+  .btn-ghost { background:transparent; color:var(--muted); border:1.5px solid var(--border); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-amber { background:var(--amber); color:white; }
+  .btn-amber:hover { background:#b45309; }
+  .btn-purple { background:var(--purple); color:white; }
+  .btn-purple:hover { background:#6d28d9; }
+  .btn-sm { padding:6px 12px; font-size:12px; }
 
   /* ── TABLO ── */
-  .data-table { width: 100%; border-collapse: collapse; }
-  .data-table th { padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); background: #f8fafc; border-bottom: 1px solid var(--border); text-align: left; }
-  .data-table td { padding: 12px 14px; font-size: 13px; color: var(--text); border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-  .data-table tr:last-child td { border-bottom: none; }
-  .data-table tr:hover td { background: #fafafa; }
+  .data-table { width:100%; border-collapse:collapse; }
+  .data-table th { padding:10px 14px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); background:#f8fafc; border-bottom:1px solid var(--border); text-align:left; }
+  .data-table td { padding:12px 14px; font-size:13px; color:var(--text); border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  .data-table tr:last-child td { border-bottom:none; }
+  .data-table tr:hover td { background:#fafafa; }
 
   /* ── BADGE ── */
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-blue   { background: var(--accent-l); color: var(--accent); }
-  .badge-green  { background: var(--green-l); color: var(--green); }
-  .badge-amber  { background: var(--amber-l); color: var(--amber); }
-  .badge-red    { background: var(--red-l); color: var(--red); }
-  .badge-gray   { background: #f1f5f9; color: var(--muted); }
+  .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .badge-blue   { background:var(--accent-l); color:var(--accent); }
+  .badge-green  { background:var(--green-l); color:var(--green); }
+  .badge-amber  { background:var(--amber-l); color:var(--amber); }
+  .badge-red    { background:var(--red-l); color:var(--red); }
+  .badge-gray   { background:#f1f5f9; color:var(--muted); }
+  .badge-purple { background:var(--purple-l); color:var(--purple); }
 
   /* ── ALERT ── */
-  .alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
-  .alert.success { background: var(--green-l); color: var(--green); border: 1px solid #bbf7d0; }
-  .alert.error   { background: var(--red-l); color: var(--red); border: 1px solid #fecaca; }
-  .alert.show    { display: flex; align-items: center; gap: 8px; }
+  .alert { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:16px; display:none; }
+  .alert.success { background:var(--green-l); color:var(--green); border:1px solid #bbf7d0; }
+  .alert.error   { background:var(--red-l); color:var(--red); border:1px solid #fecaca; }
+  .alert.show    { display:flex; align-items:center; gap:8px; }
 
-  /* ── BLOG FORM ── */
-  .blog-mode-tabs { display: flex; gap: 0; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; width: fit-content; }
-  .blog-mode-tab { padding: 8px 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: white; color: var(--muted); font-family: 'Inter', sans-serif; transition: all 0.15s; }
-  .blog-mode-tab.active { background: var(--accent); color: white; }
-  .blog-form-manual { display: none; }
-  .blog-form-manual.show { display: block; }
-  textarea.blog-content { width: 100%; min-height: 180px; resize: vertical; }
+  /* ── BLOG ── */
+  .blog-mode-tabs { display:flex; gap:0; border:1.5px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:20px; width:fit-content; }
+  .blog-mode-tab { padding:8px 20px; font-size:13px; font-weight:500; cursor:pointer; border:none; background:white; color:var(--muted); font-family:'Inter',sans-serif; transition:all 0.15s; }
+  .blog-mode-tab.active { background:var(--accent); color:white; }
+  textarea.blog-content { width:100%; min-height:180px; resize:vertical; }
 
   /* ── TOAST ── */
-  #toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 13px 22px; border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
-  #toast.show { opacity: 1; transform: translateY(0); }
-  #toast.success { background: var(--green); }
-  #toast.error   { background: var(--red); }
+  #toast { position:fixed; bottom:24px; right:24px; background:#1e293b; color:white; padding:13px 22px; border-radius:10px; font-size:13px; font-weight:500; z-index:9999; opacity:0; transform:translateY(10px); transition:all 0.3s; pointer-events:none; }
+  #toast.show    { opacity:1; transform:translateY(0); }
+  #toast.success { background:var(--green); }
+  #toast.error   { background:var(--red); }
 
   /* ── SECTION HEADER ── */
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-  .section-title { font-size: 18px; font-weight: 700; color: var(--text); }
-  .section-sub   { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .section-title { font-size:18px; font-weight:700; color:var(--text); }
+  .section-sub   { font-size:13px; color:var(--muted); margin-top:2px; }
 
   /* ── RESPONSIVE ── */
-  @media (max-width: 1100px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 768px)  { .sidebar { width: 200px; } .main-content { margin-left: 200px; } .form-grid { grid-template-columns: 1fr; } }
+  @media (max-width:1100px) { .stat-grid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:768px)  { .sidebar { width:200px; } .main-content { margin-left:200px; } .form-grid { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
 
 {% if not logged_in %}
-<!-- ════════════ GİRİŞ EKRANI ════════════ -->
+<!-- ════════════ GİRİŞ ════════════ -->
 <div class="login-wrap">
   <div class="login-card">
     <div class="login-logo">🔐</div>
     <div class="login-title">Admin Paneli</div>
     <div class="login-sub">FitLife AI yönetim sistemi</div>
-    {% if error %}
-    <div class="error-msg">⚠️ {{ error }}</div>
-    {% endif %}
+    {% if error %}<div class="error-msg">⚠️ {{ error }}</div>{% endif %}
     <form method="post" action="/admin">
       <label>Yönetici Şifresi</label>
       <input type="password" name="pw" placeholder="••••••••••" autofocus>
@@ -205,23 +241,21 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Genel</div>
-      <button class="nav-item active" onclick="switchTab('dashboard', this)">
+      <button class="nav-item active" onclick="switchTab('dashboard',this)">
         <span class="nav-icon">📊</span> Genel Bakış
       </button>
-      <button class="nav-item" onclick="switchTab('users', this)">
+      <button class="nav-item" onclick="switchTab('users',this)">
         <span class="nav-icon">👥</span> Kullanıcılar
       </button>
-
       <div class="nav-section-label">İçerik</div>
-      <button class="nav-item" onclick="switchTab('blog', this)">
+      <button class="nav-item" onclick="switchTab('blog',this)">
         <span class="nav-icon">📝</span> Blog Yönetimi
       </button>
-
       <div class="nav-section-label">Sistem</div>
-      <button class="nav-item" onclick="switchTab('api', this)">
-        <span class="nav-icon">🔑</span> API Anahtarları
+      <button class="nav-item" onclick="switchTab('ai',this)">
+        <span class="nav-icon">🤖</span> AI & Model Ayarları
       </button>
-      <button class="nav-item" onclick="switchTab('settings', this)">
+      <button class="nav-item" onclick="switchTab('settings',this)">
         <span class="nav-icon">⚙️</span> Site Ayarları
       </button>
     </nav>
@@ -280,10 +314,21 @@
             <div class="card-body">
               <div class="toggle-row">
                 <div class="toggle-info">
-                  <div class="ti-label">Groq AI Bağlantısı</div>
-                  <div class="ti-sub">FitBot & kalori API</div>
+                  <div class="ti-label">OpenRouter Bağlantısı</div>
+                  <div class="ti-sub" id="dash-primary-label">
+                    Birincil: {{ settings.get('primary_model', '—') }}
+                  </div>
                 </div>
-                <span class="badge badge-green" id="groq-status">Kontrol ediliyor...</span>
+                <span class="badge" id="openrouter-status">Kontrol ediliyor...</span>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="ti-label">Yedek Model</div>
+                  <div class="ti-sub" id="dash-fallback-label">
+                    {{ settings.get('fallback_model', '—') }}
+                  </div>
+                </div>
+                <span class="badge badge-amber">Hazırda bekliyor</span>
               </div>
               <div class="toggle-row">
                 <div class="toggle-info">
@@ -295,19 +340,10 @@
               <div class="toggle-row">
                 <div class="toggle-info">
                   <div class="ti-label">Blog Otomasyonu</div>
-                  <div class="ti-sub">Günlük saat 12:00 yazı üretimi</div>
+                  <div class="ti-sub">Günlük yazı üretimi</div>
                 </div>
-                <span class="badge {{ 'badge-green' if settings.get('blog_auto_enabled') == 'true' else 'badge-gray' }}" id="blog-auto-status">
+                <span class="badge {{ 'badge-green' if settings.get('blog_auto_enabled') == 'true' else 'badge-gray' }}">
                   {{ 'Açık ✓' if settings.get('blog_auto_enabled') == 'true' else 'Kapalı' }}
-                </span>
-              </div>
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="ti-label">Bakım Modu</div>
-                  <div class="ti-sub">Site erişimi kısıtlama</div>
-                </div>
-                <span class="badge {{ 'badge-red' if settings.get('maintenance_mode') == 'true' else 'badge-green' }}">
-                  {{ 'Açık ⚠️' if settings.get('maintenance_mode') == 'true' else 'Kapalı ✓' }}
                 </span>
               </div>
             </div>
@@ -338,11 +374,7 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Kullanıcı Adı</th>
-                  <th>E-posta</th>
-                  <th>Durum</th>
-                  <th>İşlem</th>
+                  <th>ID</th><th>Kullanıcı Adı</th><th>E-posta</th><th>Durum</th><th>İşlem</th>
                 </tr>
               </thead>
               <tbody>
@@ -353,9 +385,7 @@
                   <td style="color:var(--muted)">{{ u.email }}</td>
                   <td><span class="badge badge-green">Aktif</span></td>
                   <td>
-                    <button class="btn btn-danger btn-sm" onclick="kullaniciSil({{ u.id }}, '{{ u.username }}')">
-                      Sil
-                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="kullaniciSil({{ u.id }}, '{{ u.username }}')">Sil</button>
                   </td>
                 </tr>
                 {% endfor %}
@@ -373,26 +403,22 @@
             <div class="section-sub">{{ stats.blog_count }} aktif yazı</div>
           </div>
         </div>
-
         <div class="card" style="margin-bottom:20px">
           <div class="card-header">
             <div class="card-title">➕ Yeni Blog Yazısı</div>
           </div>
           <div class="card-body">
             <div class="blog-mode-tabs">
-              <button class="blog-mode-tab active" onclick="setBlogMode('ai', this)">✨ AI ile Üret</button>
-              <button class="blog-mode-tab" onclick="setBlogMode('manual', this)">✏️ Manuel Yaz</button>
+              <button class="blog-mode-tab active" onclick="setBlogMode('ai',this)">✨ AI ile Üret</button>
+              <button class="blog-mode-tab" onclick="setBlogMode('manual',this)">✏️ Manuel Yaz</button>
             </div>
-
             <div id="blog-ai-panel">
               <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
-                AI, beslenme & egzersiz konularından birini rastgele seçerek özgün bir yazı üretir.
-                Konu modu Site Ayarları'ndan değiştirilebilir.
+                AI, beslenme &amp; egzersiz konularından birini seçerek özgün blog yazısı üretir.
               </p>
               <button class="btn btn-success" onclick="aiOlustur()">✨ AI Blog Yazısı Üret</button>
             </div>
-
-            <div id="blog-manual-panel" class="blog-form-manual">
+            <div id="blog-manual-panel" style="display:none">
               <div id="blog-alert" class="alert"></div>
               <div class="form-grid">
                 <div class="form-group full">
@@ -416,7 +442,7 @@
                   <textarea class="blog-content" id="blog-content" placeholder="Blog yazısı içeriği..."></textarea>
                 </div>
                 <div class="form-group">
-                  <label>Okuma Süresi (dakika)</label>
+                  <label>Okuma Süresi (dk)</label>
                   <input type="number" id="blog-reading-time" value="3" min="1" max="30">
                 </div>
               </div>
@@ -426,24 +452,14 @@
             </div>
           </div>
         </div>
-
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">📋 Tüm Yazılar</div>
-          </div>
+          <div class="card-header"><div class="card-title">📋 Tüm Yazılar</div></div>
           <div class="card-body" style="padding:0">
             <table class="data-table">
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Başlık</th>
-                  <th>Kategori</th>
-                  <th>Tarih</th>
-                  <th>Okuma</th>
-                  <th>İşlem</th>
-                </tr>
+                <tr><th>ID</th><th>Başlık</th><th>Kategori</th><th>Tarih</th><th>Okuma</th><th>İşlem</th></tr>
               </thead>
-              <tbody id="blog-table-body">
+              <tbody>
                 {% for p in posts %}
                 <tr id="blog-row-{{ p.id }}">
                   <td><span class="badge badge-gray">#{{ p.id }}</span></td>
@@ -455,9 +471,7 @@
                   </td>
                   <td style="color:var(--muted)">{{ p.published_at }}</td>
                   <td style="color:var(--muted)">{{ p.reading_time }} dk</td>
-                  <td>
-                    <button class="btn btn-danger btn-sm" onclick="blogSil({{ p.id }})">Sil</button>
-                  </td>
+                  <td><button class="btn btn-danger btn-sm" onclick="blogSil({{ p.id }})">Sil</button></td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -466,70 +480,186 @@
         </div>
       </div>
 
-      <!-- ── API ANAHTARLARI ── -->
-      <div class="tab-panel" id="tab-api">
+      <!-- ── AI & MODEL AYARLARI ── -->
+      <div class="tab-panel" id="tab-ai">
         <div class="section-header">
           <div>
-            <div class="section-title">API Anahtarları</div>
-            <div class="section-sub">Harici servis bağlantıları</div>
+            <div class="section-title">AI & Model Ayarları</div>
+            <div class="section-sub">OpenRouter üzerinden birincil ve yedek model seçimi</div>
           </div>
         </div>
 
-        <div id="api-alert" class="alert"></div>
+        <div id="ai-alert" class="alert"></div>
 
+        <!-- API KEY -->
         <div class="card" style="margin-bottom:20px">
           <div class="card-header">
-            <div class="card-title">🤖 Groq AI</div>
-            <span class="badge badge-blue">FitBot & Kalori</span>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group full">
-                <label>API Anahtarı</label>
-                <input type="password" id="groq_api_key" 
-                       value="{{ settings.get('groq_api_key', '') }}"
-                       placeholder="gsk_...">
-                <div class="form-hint">Groq Console'dan alınır: console.groq.com</div>
-              </div>
-              <div class="form-group">
-                <label>Model</label>
-                <select id="groq_model">
-                  <option value="llama-3.3-70b-versatile" {{ 'selected' if settings.get('groq_model') == 'llama-3.3-70b-versatile' else '' }}>llama-3.3-70b-versatile (Önerilen)</option>
-                  <option value="llama-3.1-8b-instant" {{ 'selected' if settings.get('groq_model') == 'llama-3.1-8b-instant' else '' }}>llama-3.1-8b-instant (Hızlı)</option>
-                  <option value="mixtral-8x7b-32768" {{ 'selected' if settings.get('groq_model') == 'mixtral-8x7b-32768' else '' }}>mixtral-8x7b-32768</option>
-                  <option value="gemma2-9b-it" {{ 'selected' if settings.get('groq_model') == 'gemma2-9b-it' else '' }}>gemma2-9b-it</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Maks. Token</label>
-                <input type="number" id="max_tokens" 
-                       value="{{ settings.get('max_tokens', '1500') }}"
-                       min="500" max="4000" step="100">
-                <div class="form-hint">FitBot yanıt uzunluğu (500-4000)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🥦 USDA Food API</div>
-            <span class="badge badge-gray">Opsiyonel</span>
+            <div class="card-title">🔑 OpenRouter API Anahtarı</div>
+            <a href="https://openrouter.ai/keys" target="_blank" class="btn btn-ghost btn-sm">openrouter.ai →</a>
           </div>
           <div class="card-body">
             <div class="form-group">
               <label>API Anahtarı</label>
-              <input type="password" id="usda_api_key" 
-                     value="{{ settings.get('usda_api_key', '') }}"
-                     placeholder="DEMO_KEY veya kişisel anahtar">
-              <div class="form-hint">fdc.nal.usda.gov adresinden ücretsiz alınır</div>
+              <input type="password" id="openrouter_api_key"
+                     value="{{ settings.get('openrouter_api_key', '') }}"
+                     placeholder="sk-or-v1-...">
+              <div class="form-hint">openrouter.ai/keys adresinden ücretsiz alınır. Ücretsiz modeller için kredi gerekmez.</div>
             </div>
           </div>
         </div>
 
-        <div style="margin-top:20px">
-          <button class="btn btn-primary" onclick="apiAyarlarKaydet()">💾 API Ayarlarını Kaydet</button>
-          <button class="btn btn-ghost" onclick="groqTest()" style="margin-left:10px">🔌 Bağlantıyı Test Et</button>
+        <!-- BİRİNCİL MODEL -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div class="card-title">⭐ Birincil Model</div>
+            <span class="badge badge-blue">İlk Tercih</span>
+          </div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--muted);margin-bottom:14px">
+              Her istekte önce bu model denenir. Hata / zaman aşımı olursa yedek devreye girer.
+            </p>
+            <div class="model-selector" id="primary-model-list">
+              {% set pm = settings.get('primary_model', 'meta-llama/llama-3.3-70b-instruct:free') %}
+              {% set free_models = [
+                ('meta-llama/llama-3.3-70b-instruct:free', 'Llama 3.3 70B Instruct', 'Meta — Güçlü, ücretsiz, Türkçe uyumlu', 'free'),
+                ('meta-llama/llama-3.1-8b-instruct:free', 'Llama 3.1 8B Instruct', 'Meta — Hızlı ve hafif, ücretsiz', 'free'),
+                ('mistralai/mistral-7b-instruct:free', 'Mistral 7B Instruct', 'Mistral AI — Hızlı, Türkçe destekli, ücretsiz', 'free'),
+                ('google/gemma-3-4b-it:free', 'Gemma 3 4B IT', 'Google — Kompakt ve ücretsiz', 'free'),
+                ('deepseek/deepseek-r1-distill-llama-70b:free', 'DeepSeek R1 Distill 70B', 'DeepSeek — Akıl yürütme odaklı, ücretsiz', 'free'),
+                ('qwen/qwq-32b:free', 'Qwen QwQ 32B', 'Alibaba — Mantıksal düşünme, ücretsiz', 'free'),
+              ] %}
+              {% for model_id, model_name, model_desc, tier in free_models %}
+              <label class="model-option">
+                <input type="radio" name="primary_model" value="{{ model_id }}"
+                       {{ 'checked' if pm == model_id else '' }}>
+                <div class="mo-info">
+                  <div class="mo-name">{{ model_name }}</div>
+                  <div class="mo-desc">{{ model_desc }}</div>
+                </div>
+                <span class="mo-badge mo-{{ tier }}">{{ 'Ücretsiz' if tier == 'free' else 'Ücretli' }}</span>
+              </label>
+              {% endfor %}
+            </div>
+            <div style="margin-top:12px">
+              <div class="form-group">
+                <label>Özel Model ID (opsiyonel)</label>
+                <input type="text" id="primary_model_custom"
+                       placeholder="org/model-name:free"
+                       value="{{ '' if settings.get('primary_model','') in ['meta-llama/llama-3.3-70b-instruct:free','meta-llama/llama-3.1-8b-instruct:free','mistralai/mistral-7b-instruct:free','google/gemma-3-4b-it:free','deepseek/deepseek-r1-distill-llama-70b:free','qwen/qwq-32b:free'] else settings.get('primary_model','') }}">
+                <div class="form-hint">Listede olmayan bir model kullanmak için buraya yazın. openrouter.ai/models adresinden bulabilirsiniz.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- YEDEK MODEL -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div class="card-title">🛡️ Yedek Model (Fallback)</div>
+            <span class="badge badge-amber">Otomatik Devreye Girer</span>
+          </div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--muted);margin-bottom:14px">
+              Birincil model başarısız olursa <strong>otomatik olarak</strong> bu model devreye girer. Kullanıcı hiçbir şey fark etmez.
+            </p>
+            <div class="model-selector" id="fallback-model-list">
+              {% set fm = settings.get('fallback_model', 'mistralai/mistral-7b-instruct:free') %}
+              {% set fallback_models = [
+                ('mistralai/mistral-7b-instruct:free', 'Mistral 7B Instruct', 'Mistral AI — Hızlı ve güvenilir, yedek için ideal', 'free'),
+                ('meta-llama/llama-3.1-8b-instruct:free', 'Llama 3.1 8B Instruct', 'Meta — Hafif ve hızlı, yedek için uygun', 'free'),
+                ('google/gemma-3-4b-it:free', 'Gemma 3 4B IT', 'Google — Kompakt, yedek için hızlı yanıt', 'free'),
+                ('meta-llama/llama-3.3-70b-instruct:free', 'Llama 3.3 70B Instruct', 'Meta — Güçlü yedek seçeneği', 'free'),
+                ('deepseek/deepseek-r1-distill-llama-70b:free', 'DeepSeek R1 Distill 70B', 'DeepSeek — Akıl yürütme odaklı yedek', 'free'),
+                ('qwen/qwq-32b:free', 'Qwen QwQ 32B', 'Alibaba — Geniş bağlam destekli yedek', 'free'),
+              ] %}
+              {% for model_id, model_name, model_desc, tier in fallback_models %}
+              <label class="model-option">
+                <input type="radio" name="fallback_model" value="{{ model_id }}"
+                       {{ 'checked' if fm == model_id else '' }}>
+                <div class="mo-info">
+                  <div class="mo-name">{{ model_name }}</div>
+                  <div class="mo-desc">{{ model_desc }}</div>
+                </div>
+                <span class="mo-badge mo-{{ tier }}">{{ 'Ücretsiz' if tier == 'free' else 'Ücretli' }}</span>
+              </label>
+              {% endfor %}
+            </div>
+            <div style="margin-top:12px">
+              <div class="form-group">
+                <label>Özel Yedek Model ID (opsiyonel)</label>
+                <input type="text" id="fallback_model_custom"
+                       placeholder="org/model-name:free"
+                       value="{{ '' if settings.get('fallback_model','') in ['mistralai/mistral-7b-instruct:free','meta-llama/llama-3.1-8b-instruct:free','google/gemma-3-4b-it:free','meta-llama/llama-3.3-70b-instruct:free','deepseek/deepseek-r1-distill-llama-70b:free','qwen/qwq-32b:free'] else settings.get('fallback_model','') }}">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FALLBACK AKIŞI GÖRSELI -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><div class="card-title">🔄 Çalışma Mantığı</div></div>
+          <div class="card-body">
+            <div class="fallback-flow">
+              <div class="ff-box primary-box">
+                <div class="ff-label" style="color:var(--accent)">⭐ Birincil</div>
+                <div class="ff-model-name" id="flow-primary">—</div>
+              </div>
+              <div class="ff-arrow">→</div>
+              <div class="ff-error">Hata / Timeout</div>
+              <div class="ff-arrow">→</div>
+              <div class="ff-box fallback-box">
+                <div class="ff-label" style="color:var(--amber)">🛡️ Yedek</div>
+                <div class="ff-model-name" id="flow-fallback">—</div>
+              </div>
+              <div class="ff-arrow">→</div>
+              <div class="ff-box" style="border-color:var(--green)">
+                <div class="ff-label" style="color:var(--green)">✅ Kullanıcı</div>
+                <div class="ff-model-name">Yanıt alır</div>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin-top:10px">
+              İki model de başarısız olursa kullanıcıya nazik bir hata mesajı gösterilir.
+            </p>
+          </div>
+        </div>
+
+        <!-- TOKEN & TEST -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><div class="card-title">⚙️ Yanıt Ayarları</div></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Maks. Token</label>
+                <input type="number" id="max_tokens"
+                       value="{{ settings.get('max_tokens', '1500') }}"
+                       min="500" max="4000" step="100">
+                <div class="form-hint">FitBot yanıt uzunluğu (500–4000)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-primary" onclick="aiAyarlarKaydet()">💾 Ayarları Kaydet</button>
+          <button class="btn btn-purple" onclick="aiTest()">🔌 Her İki Modeli Test Et</button>
+        </div>
+
+        <!-- TEST SONUÇLARI -->
+        <div class="test-result" id="test-result-box">
+          <div class="tr-row" id="tr-primary-row">
+            <div class="tr-icon" id="tr-primary-icon">⏳</div>
+            <div class="tr-info">
+              <div class="tr-model" id="tr-primary-model">Birincil model test ediliyor...</div>
+              <div class="tr-msg" id="tr-primary-msg"></div>
+            </div>
+          </div>
+          <div class="tr-row" id="tr-fallback-row">
+            <div class="tr-icon" id="tr-fallback-icon">⏳</div>
+            <div class="tr-info">
+              <div class="tr-model" id="tr-fallback-model">Yedek model test ediliyor...</div>
+              <div class="tr-msg" id="tr-fallback-msg"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -545,21 +675,19 @@
         <div id="settings-alert" class="alert"></div>
 
         <div class="card" style="margin-bottom:20px">
-          <div class="card-header">
-            <div class="card-title">🎯 Hedef Değerleri</div>
-          </div>
+          <div class="card-header"><div class="card-title">🎯 Hedef Değerleri</div></div>
           <div class="card-body">
             <div class="form-grid">
               <div class="form-group">
                 <label>Günlük Kalori Hedefi (kcal)</label>
-                <input type="number" id="daily_calorie_goal" 
+                <input type="number" id="daily_calorie_goal"
                        value="{{ settings.get('daily_calorie_goal', '2200') }}"
                        min="1000" max="5000">
-                <div class="form-hint">Tüm kullanıcılar için varsayılan hedef</div>
+                <div class="form-hint">Tüm kullanıcılar için varsayılan</div>
               </div>
               <div class="form-group">
                 <label>Günlük Su Hedefi (bardak)</label>
-                <input type="number" id="daily_water_goal" 
+                <input type="number" id="daily_water_goal"
                        value="{{ settings.get('daily_water_goal', '8') }}"
                        min="4" max="16">
               </div>
@@ -568,14 +696,12 @@
         </div>
 
         <div class="card" style="margin-bottom:20px">
-          <div class="card-header">
-            <div class="card-title">📝 Blog Otomasyonu</div>
-          </div>
+          <div class="card-header"><div class="card-title">📝 Blog Otomasyonu</div></div>
           <div class="card-body">
             <div class="toggle-row">
               <div class="toggle-info">
                 <div class="ti-label">Otomatik Blog Yazısı</div>
-                <div class="ti-sub">Her gün saat 12:00'de AI blog yazısı üretir</div>
+                <div class="ti-sub">Her gün ilk ziyarette AI blog yazısı üretir</div>
               </div>
               <label class="toggle">
                 <input type="checkbox" id="blog_auto_enabled"
@@ -587,9 +713,9 @@
               <div class="form-group">
                 <label>Blog Konu Modu</label>
                 <select id="blog_topic_mode">
-                  <option value="karma" {{ 'selected' if settings.get('blog_topic_mode') == 'karma' else '' }}>Karma (Beslenme + Egzersiz)</option>
-                  <option value="beslenme" {{ 'selected' if settings.get('blog_topic_mode') == 'beslenme' else '' }}>Sadece Beslenme</option>
-                  <option value="egzersiz" {{ 'selected' if settings.get('blog_topic_mode') == 'egzersiz' else '' }}>Sadece Egzersiz</option>
+                  <option value="karma"     {{ 'selected' if settings.get('blog_topic_mode') == 'karma' else '' }}>Karma (Beslenme + Egzersiz)</option>
+                  <option value="beslenme"  {{ 'selected' if settings.get('blog_topic_mode') == 'beslenme' else '' }}>Sadece Beslenme</option>
+                  <option value="egzersiz"  {{ 'selected' if settings.get('blog_topic_mode') == 'egzersiz' else '' }}>Sadece Egzersiz</option>
                 </select>
               </div>
             </div>
@@ -597,14 +723,12 @@
         </div>
 
         <div class="card" style="margin-bottom:20px">
-          <div class="card-header">
-            <div class="card-title">🌐 Genel</div>
-          </div>
+          <div class="card-header"><div class="card-title">🌐 Genel</div></div>
           <div class="card-body">
             <div class="form-grid">
               <div class="form-group">
                 <label>Site Başlığı</label>
-                <input type="text" id="site_title" 
+                <input type="text" id="site_title"
                        value="{{ settings.get('site_title', 'FitLife AI') }}">
               </div>
             </div>
@@ -627,7 +751,7 @@
 
     </div><!-- /page-body -->
   </main>
-</div><!-- /admin-layout -->
+</div>
 {% endif %}
 
 <div id="toast"></div>
@@ -638,14 +762,14 @@ function showToast(msg, type = 'success') {
   const t = document.getElementById('toast');
   t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
   t.className = 'show ' + type;
-  setTimeout(() => t.className = '', 3000);
+  setTimeout(() => t.className = '', 3500);
 }
 
 function showAlert(id, msg, type = 'success') {
   const el = document.getElementById(id);
   el.textContent = (type === 'success' ? '✅ ' : '⚠️ ') + msg;
   el.className = 'alert ' + type + ' show';
-  setTimeout(() => el.className = 'alert', 4000);
+  setTimeout(() => el.className = 'alert', 4500);
 }
 
 async function apiFetch(url, body) {
@@ -657,12 +781,12 @@ async function apiFetch(url, body) {
   return res.json();
 }
 
-// ── TAB GEÇİŞİ ───────────────────────────────────────────────────────────────
+// ── TAB ───────────────────────────────────────────────────────────────────────
 const tabTitles = {
   dashboard: 'Genel Bakış',
   users:     'Kullanıcı Yönetimi',
   blog:      'Blog Yönetimi',
-  api:       'API Anahtarları',
+  ai:        'AI & Model Ayarları',
   settings:  'Site Ayarları'
 };
 
@@ -672,9 +796,33 @@ function switchTab(id, btn) {
   document.getElementById('tab-' + id).classList.add('active');
   btn.classList.add('active');
   document.getElementById('topbarTitle').textContent = tabTitles[id] || id;
+  if (id === 'ai') updateFlowDiagram();
 }
 
-// ── İSTATİSTİK YENİLE ─────────────────────────────────────────────────────────
+// ── FALLBACK AKIŞ DİYAGRAMI ─────────────────────────────────────────────────
+function getSelectedModel(name) {
+  const custom = document.getElementById(name === 'primary_model' ? 'primary_model_custom' : 'fallback_model_custom');
+  if (custom && custom.value.trim()) return custom.value.trim();
+  const radios = document.querySelectorAll(`input[name="${name}"]`);
+  for (const r of radios) { if (r.checked) return r.value; }
+  return '—';
+}
+
+function updateFlowDiagram() {
+  const p = document.getElementById('flow-primary');
+  const f = document.getElementById('flow-fallback');
+  if (p) p.textContent = getSelectedModel('primary_model').split('/').pop() || '—';
+  if (f) f.textContent = getSelectedModel('fallback_model').split('/').pop() || '—';
+}
+
+// Radyo değişince diyagramı güncelle
+document.addEventListener('change', e => {
+  if (e.target.name === 'primary_model' || e.target.name === 'fallback_model') {
+    updateFlowDiagram();
+  }
+});
+
+// ── İSTATİSTİK ────────────────────────────────────────────────────────────────
 async function refreshStats() {
   try {
     const res = await fetch('/admin/istatistik');
@@ -690,9 +838,9 @@ async function refreshStats() {
 // ── BUGÜNÜN BLOGU ─────────────────────────────────────────────────────────────
 async function loadTodayBlog() {
   try {
-    const res = await fetch('/blog/bugun');
+    const res  = await fetch('/blog/bugun');
     const data = await res.json();
-    const el = document.getElementById('todayBlogInfo');
+    const el   = document.getElementById('todayBlogInfo');
     if (data.success && data.post) {
       el.innerHTML = `
         <div style="display:flex;align-items:flex-start;gap:12px">
@@ -705,42 +853,12 @@ async function loadTodayBlog() {
     } else {
       el.innerHTML = '<span style="color:var(--muted)">Bugün henüz yazı yok. ✨ AI ile üretebilirsiniz.</span>';
     }
-  } catch {
-    document.getElementById('todayBlogInfo').textContent = 'Yüklenemedi.';
-  }
-}
-
-// ── GROQ BAĞLANTI TESTİ ───────────────────────────────────────────────────────
-async function groqTest() {
-  const statusEl = document.getElementById('groq-status');
-  statusEl.textContent = 'Test ediliyor...';
-  statusEl.className = 'badge badge-amber';
-  try {
-    const res = await fetch('/soru-sor', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'merhaba' })
-    });
-    const data = await res.json();
-    if (data.reply && !data.reply.includes('hata') && !data.reply.includes('Bağlantı')) {
-      statusEl.textContent = 'Aktif ✓';
-      statusEl.className = 'badge badge-green';
-      showToast('Groq bağlantısı başarılı!');
-    } else {
-      statusEl.textContent = 'Hata ✗';
-      statusEl.className = 'badge badge-red';
-      showToast('Groq bağlantısı başarısız: ' + data.reply, 'error');
-    }
-  } catch {
-    statusEl.textContent = 'Hata ✗';
-    statusEl.className = 'badge badge-red';
-    showToast('Bağlantı testi başarısız', 'error');
-  }
+  } catch { document.getElementById('todayBlogInfo').textContent = 'Yüklenemedi.'; }
 }
 
 // ── KULLANICI SİL ─────────────────────────────────────────────────────────────
 async function kullaniciSil(id, username) {
-  if (!confirm(`"${username}" kullanıcısını ve tüm verilerini silmek istediğinizden emin misiniz?`)) return;
+  if (!confirm(`"${username}" kullanıcısını silmek istediğinizden emin misiniz?`)) return;
   const data = await apiFetch('/admin/kullanici-sil', { user_id: id });
   if (data.success) {
     document.getElementById('user-row-' + id)?.remove();
@@ -751,7 +869,7 @@ async function kullaniciSil(id, username) {
   }
 }
 
-// ── BLOG: AI ÜRETİM ──────────────────────────────────────────────────────────
+// ── BLOG ─────────────────────────────────────────────────────────────────────
 async function aiOlustur() {
   showToast('AI blog yazısı üretiyor...');
   try {
@@ -765,18 +883,12 @@ async function aiOlustur() {
   } catch { showToast('Hata oluştu', 'error'); }
 }
 
-// ── BLOG: MANUEL KAYDET ───────────────────────────────────────────────────────
 async function manuelBlogKaydet() {
   const title   = document.getElementById('blog-title').value.trim();
   const content = document.getElementById('blog-content').value.trim();
-  if (!title || !content) {
-    showAlert('blog-alert', 'Başlık ve içerik zorunludur.', 'error');
-    return;
-  }
+  if (!title || !content) { showAlert('blog-alert', 'Başlık ve içerik zorunludur.', 'error'); return; }
   const data = await apiFetch('/admin/blog-olustur', {
-    manual:       true,
-    title,
-    content,
+    manual: true, title, content,
     category:     document.getElementById('blog-category').value,
     emoji:        document.getElementById('blog-emoji').value,
     reading_time: document.getElementById('blog-reading-time').value
@@ -789,7 +901,6 @@ async function manuelBlogKaydet() {
   }
 }
 
-// ── BLOG SİL ──────────────────────────────────────────────────────────────────
 async function blogSil(id) {
   if (!confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) return;
   const data = await apiFetch('/admin/blog-sil', { post_id: id });
@@ -802,7 +913,6 @@ async function blogSil(id) {
   }
 }
 
-// ── BLOG MOD ──────────────────────────────────────────────────────────────────
 function setBlogMode(mode, btn) {
   document.querySelectorAll('.blog-mode-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
@@ -810,24 +920,92 @@ function setBlogMode(mode, btn) {
   document.getElementById('blog-manual-panel').style.display = mode === 'manual' ? 'block' : 'none';
 }
 
-// ── API AYARLARI KAYDET ───────────────────────────────────────────────────────
-async function apiAyarlarKaydet() {
+// ── AI AYARLARI KAYDET ────────────────────────────────────────────────────────
+async function aiAyarlarKaydet() {
+  const primaryCustom  = document.getElementById('primary_model_custom').value.trim();
+  const fallbackCustom = document.getElementById('fallback_model_custom').value.trim();
+
+  const primaryModel  = primaryCustom  || getSelectedModel('primary_model');
+  const fallbackModel = fallbackCustom || getSelectedModel('fallback_model');
+
   const payload = {
-    groq_api_key: document.getElementById('groq_api_key').value.trim(),
-    groq_model:   document.getElementById('groq_model').value,
-    max_tokens:   document.getElementById('max_tokens').value,
-    usda_api_key: document.getElementById('usda_api_key').value.trim(),
+    openrouter_api_key: document.getElementById('openrouter_api_key').value.trim(),
+    primary_model:      primaryModel,
+    fallback_model:     fallbackModel,
+    max_tokens:         document.getElementById('max_tokens').value,
   };
+
+  if (!payload.openrouter_api_key) {
+    showAlert('ai-alert', 'OpenRouter API anahtarı boş olamaz.', 'error');
+    return;
+  }
+  if (primaryModel === fallbackModel) {
+    showAlert('ai-alert', 'Birincil ve yedek model aynı olmamalı. Farklı bir yedek seçin.', 'error');
+    return;
+  }
+
   const data = await apiFetch('/admin/ayarlar-kaydet', payload);
   if (data.success) {
-    showAlert('api-alert', 'API ayarları kaydedildi!', 'success');
-    showToast('API ayarları kaydedildi!');
+    showAlert('ai-alert', `Kaydedildi! Birincil: ${primaryModel.split('/').pop()} → Yedek: ${fallbackModel.split('/').pop()}`, 'success');
+    showToast('AI ayarları kaydedildi!');
+    updateFlowDiagram();
   } else {
-    showAlert('api-alert', data.message, 'error');
+    showAlert('ai-alert', data.message, 'error');
   }
 }
 
-// ── SİTE AYARLARI KAYDET ─────────────────────────────────────────────────────
+// ── AI TEST ───────────────────────────────────────────────────────────────────
+async function aiTest() {
+  const box = document.getElementById('test-result-box');
+  box.className = 'test-result show ok';
+
+  ['primary','fallback'].forEach(k => {
+    document.getElementById(`tr-${k}-icon`).textContent  = '⏳';
+    document.getElementById(`tr-${k}-model`).textContent = k === 'primary' ? 'Birincil model test ediliyor...' : 'Yedek model test ediliyor...';
+    document.getElementById(`tr-${k}-msg`).textContent   = '';
+  });
+
+  try {
+    const res  = await fetch('/admin/ai-test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    const data = await res.json();
+
+    // Birincil
+    const pi = document.getElementById('tr-primary-icon');
+    const pm = document.getElementById('tr-primary-model');
+    const px = document.getElementById('tr-primary-msg');
+    if (data.primary?.ok) {
+      pi.textContent = '✅';
+      pm.textContent = `Birincil: ${data.primary.model}`;
+      px.textContent = data.primary.response;
+    } else {
+      pi.textContent = '❌';
+      pm.textContent = `Birincil başarısız: ${data.primary?.model || '—'}`;
+      px.textContent = data.primary?.error || 'Bilinmeyen hata';
+    }
+
+    // Yedek
+    const fi = document.getElementById('tr-fallback-icon');
+    const fm = document.getElementById('tr-fallback-model');
+    const fx = document.getElementById('tr-fallback-msg');
+    if (data.fallback?.ok) {
+      fi.textContent = '✅';
+      fm.textContent = `Yedek: ${data.fallback.model}`;
+      fx.textContent = data.fallback.response;
+    } else {
+      fi.textContent = '❌';
+      fm.textContent = `Yedek başarısız: ${data.fallback?.model || '—'}`;
+      fx.textContent = data.fallback?.error || 'Bilinmeyen hata';
+    }
+
+    const allOk = data.primary?.ok && data.fallback?.ok;
+    box.className = 'test-result show ' + (allOk ? 'ok' : 'err');
+    showToast(allOk ? 'Her iki model de çalışıyor!' : 'Bir veya her iki model hata verdi.', allOk ? 'success' : 'error');
+  } catch (e) {
+    showToast('Test isteği gönderilemedi: ' + e.message, 'error');
+  }
+}
+
+// ── SİTE AYARLARI ─────────────────────────────────────────────────────────────
 async function siteAyarlarKaydet() {
   const payload = {
     daily_calorie_goal: document.getElementById('daily_calorie_goal').value,
@@ -848,29 +1026,28 @@ async function siteAyarlarKaydet() {
 
 // ── SAYFA YÜKLENME ────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Tarih
-  const now = new Date();
-  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const now  = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
   const dateEl = document.getElementById('topbarDate');
   if (dateEl) dateEl.textContent = now.toLocaleDateString('tr-TR', opts);
 
-  // Bugünün blogu
   loadTodayBlog();
+  updateFlowDiagram();
 
-  // Groq durum kontrolü (gecikmeli)
+  // OpenRouter anahtar kontrolü (dashboard badge)
   setTimeout(() => {
-    const el = document.getElementById('groq-status');
+    const el  = document.getElementById('openrouter-status');
+    const key = '{{ settings.get("openrouter_api_key", "") }}';
     if (el) {
-      const key = '{{ settings.get("groq_api_key", "") }}';
       if (key && key.length > 10) {
         el.textContent = 'Anahtar mevcut ✓';
-        el.className = 'badge badge-green';
+        el.className   = 'badge badge-green';
       } else {
         el.textContent = 'Anahtar yok ⚠️';
-        el.className = 'badge badge-amber';
+        el.className   = 'badge badge-amber';
       }
     }
-  }, 500);
+  }, 400);
 });
 </script>
 

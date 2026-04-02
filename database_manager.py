@@ -112,24 +112,31 @@ class DatabaseManager:
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )''')
 
-            # ─── YENİ: AYARLAR TABLOSU ───────────────────────────────────────
+            # ─── AYARLAR TABLOSU ─────────────────────────────────────────────
             c.execute('''CREATE TABLE IF NOT EXISTS settings (
                 key   TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             )''')
 
-            # Varsayılan ayarları ekle (eğer yoksa)
+            # Varsayılan ayarlar (OpenRouter tabanlı)
             default_settings = [
-                ('groq_api_key',      ''),
-                ('usda_api_key',      ''),
-                ('groq_model',        'llama-3.3-70b-versatile'),
-                ('max_tokens',        '1500'),
+                # OpenRouter
+                ('openrouter_api_key', ''),
+                ('primary_model',      'meta-llama/llama-3.3-70b-instruct:free'),
+                ('fallback_model',     'mistralai/mistral-7b-instruct:free'),
+                ('max_tokens',         '1500'),
+                # Eski Groq anahtarı (geriye dönük uyumluluk için bırakıldı)
+                ('groq_api_key',       ''),
+                ('usda_api_key',       ''),
+                # Hedefler
                 ('daily_calorie_goal', '2200'),
-                ('daily_water_goal',  '8'),
-                ('blog_auto_enabled', 'true'),
-                ('blog_topic_mode',   'karma'),
-                ('site_title',        'FitLife AI'),
-                ('maintenance_mode',  'false'),
+                ('daily_water_goal',   '8'),
+                # Blog
+                ('blog_auto_enabled',  'true'),
+                ('blog_topic_mode',    'karma'),
+                # Site
+                ('site_title',         'FitLife AI'),
+                ('maintenance_mode',   'false'),
             ]
             for key, val in default_settings:
                 c.execute(
@@ -137,7 +144,7 @@ class DatabaseManager:
                     (key, val)
                 )
 
-            # ─── YENİ: BLOG TABLOSU ──────────────────────────────────────────
+            # ─── BLOG TABLOSU ─────────────────────────────────────────────────
             c.execute('''CREATE TABLE IF NOT EXISTS blog_posts (
                 id           SERIAL PRIMARY KEY,
                 title        TEXT    NOT NULL,
@@ -405,9 +412,7 @@ class DatabaseManager:
     def get_latest_period_log(self, user_id):
         with self.get_connection() as conn:
             c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            c.execute(
-                "SELECT * FROM period_log WHERE user_id=%s", (user_id,)
-            )
+            c.execute("SELECT * FROM period_log WHERE user_id=%s", (user_id,))
             row = c.fetchone()
         return dict(row) if row else None
 
