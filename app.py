@@ -2,17 +2,13 @@ import os
 import re
 import json
 import requests
-from datetime import date
+from datetime import date, datetime
 from flask import (Flask, render_template, request, jsonify,
                    send_from_directory, session, redirect, url_for)
 from database_manager import DatabaseManager
 
 app = Flask(__name__)
-
 app.secret_key = os.environ.get("SECRET_KEY", "fitlife-secret-2026")
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-GROQ_MODEL = "llama-3.3-70b-versatile"
-USDA_API_KEY = os.environ.get("USDA_API_KEY", "")
 
 db = DatabaseManager()
 
@@ -21,18 +17,39 @@ def today():
     return str(date.today())
 
 
-def call_groq(messages, system_prompt, max_tokens=1500):
+# ─── API KEY'LERİ DB'DEN OKU (env yoksa) ─────────────────────────────────────
+def get_groq_key():
+    key = db.get_setting('groq_api_key')
+    return key if key else os.environ.get("GROQ_API_KEY", "")
+
+
+def get_groq_model():
+    return db.get_setting('groq_model') or "llama-3.3-70b-versatile"
+
+
+def get_max_tokens():
+    try:
+        return int(db.get_setting('max_tokens') or 1500)
+    except:
+        return 1500
+
+
+def call_groq(messages, system_prompt, max_tokens=None):
+    if max_tokens is None:
+        max_tokens = get_max_tokens()
+    groq_key = get_groq_key()
+    model = get_groq_model()
     try:
         all_messages = [
             {"role": "system", "content": system_prompt}] + messages
         resp = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={
-                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Authorization": f"Bearer {groq_key}",
                 "Content-Type": "application/json"
             },
             json={
-                "model": GROQ_MODEL,
+                "model": model,
                 "messages": all_messages,
                 "max_tokens": max_tokens,
                 "temperature": 0.7
@@ -46,19 +63,18 @@ def call_groq(messages, system_prompt, max_tokens=1500):
             filtered = []
             for line in lines:
                 lower = line.lower().strip()
-                if any(word in lower for word in ['merhaba', 'selam', 'hos geldin', 'sultan', 'gunaydin', 'iyi gunler', 'nasilsin', 'nasil yardimci']):
+                if any(word in lower for word in ['merhaba', 'selam', 'hos geldin', 'sultan',
+                                                  'gunaydin', 'iyi gunler', 'nasilsin', 'nasil yardimci']):
                     continue
                 filtered.append(line)
-            content = '\n'.join(filtered).strip()
-            return content
+            return '\n'.join(filtered).strip()
         elif "error" in result:
-            err = result["error"].get("message", "Bilinmeyen hata")
-            return f"AI hatasi: {err}"
-        return "Su an cevap uretemiyorum, biraz sonra tekrar dene"
+            return f"AI hatası: {result['error'].get('message', 'Bilinmeyen hata')}"
+        return "Şu an cevap üretemiyorum, biraz sonra tekrar dene."
     except requests.exceptions.Timeout:
-        return "AI yanit vermede gecikiyor. Biraz sonra tekrar dene."
+        return "AI yanıt vermede gecikiyor. Biraz sonra tekrar dene."
     except Exception as e:
-        return f"Baglanti hatasi: {str(e)}"
+        return f"Bağlantı hatası: {str(e)}"
 
 
 def build_system_prompt(user_id):
@@ -70,13 +86,13 @@ def build_system_prompt(user_id):
     period_log = db.get_latest_period_log(user_id)
 
     if not profile:
-        return "Sen FitBot'sun. Saglikli beslenme ve fitness konusunda Turkce yardim eden bir asistansin."
+        return "Sen FitBot'sun. Sağlıklı beslenme ve fitness konusunda Türkçe yardım eden bir asistansın."
 
     current = profile.get('current_weight', 70)
     target = profile.get('target_weight', 60)
     diff = round(current - target, 1)
     notes = profile.get('notes', '')
-    username = session.get('username', 'Kullanici')
+    username = session.get('username', 'Kullanıcı')
     ad_soyad = f"{profile.get('first_name', '')} {profile.get('last_name', '')}".strip(
     ) or username
     age = profile.get('age', '')
@@ -85,45 +101,49 @@ def build_system_prompt(user_id):
     activity = profile.get('activity_level', 'orta')
 
     food_str = (", ".join(f"{f['name']} ({int(f['kcal'])} kcal)" for f in foods)
-                if foods else "Bugun henuz yemek kaydedilmemis")
+                if foods else "Bugün henüz yemek kaydedilmemiş")
     total_kcal = sum(f['kcal'] for f in foods)
-
     ex_str = (", ".join(f"{e['emoji']} {e['name']} (~{int(e['kcal'])} kcal)" for e in exercises)
-              if exercises else "Bugun egzersiz yapilmamis")
+              if exercises else "Bugün egzersiz yapılmamış")
     ex_kcal = sum(e['kcal'] for e in exercises)
 
-    sleep_str = "Uyku verisi henuz girilmemis."
+    sleep_str = "Uyku verisi henüz girilmemiş."
     if sleep_data:
-        sleep_str = f"Son uykun {sleep_data.get('sleep_start', '?')} ile {sleep_data.get('sleep_end', '?')} arasindaydi."
+        sleep_str = f"Son uyku {sleep_data.get('sleep_start', '?')} ile {sleep_data.get('sleep_end', '?')} arasındaydı."
 
-    trend_str = "Henuz yeterli kilo gecmisi yok."
+    trend_str = "Henüz yeterli kilo geçmişi yok."
     if len(weight_log) >= 2:
         trend = weight_log[0]['weight'] - weight_log[-1]['weight']
-        trend_str = f"Son {len(weight_log)} kayitta {abs(trend):.1f} kg {'vermis' if trend > 0 else 'almis'}."
+        trend_str = f"Son {len(weight_log)} kayıtta {abs(trend):.1f} kg {'vermiş' if trend > 0 else 'almış'}."
 
-    period_str = "Regl verisi girilmemis."
+    period_str = "Regl verisi girilmemiş."
     if period_log:
         period_str = (f"Son regl: {period_log['last_period_date']}, "
-                      f"dongu uzunlugu: {period_log['cycle_length']} gun, "
-                      f"sure: {period_log['period_duration']} gun.")
+                      f"döngü: {period_log['cycle_length']} gün, "
+                      f"süre: {period_log['period_duration']} gün.")
 
-    return f"""Sen FitBot'sun. Saglikli beslenme ve fitness konusunda Turkce yardim eden uzman bir asistansin.
+    calorie_goal = db.get_setting('daily_calorie_goal') or '2200'
 
-Kullanici: {ad_soyad}
-Yas/Cinsiyet: {age} / {gender} | Boy: {height} cm
+    return f"""Sen FitBot'sun. Sağlıklı beslenme ve fitness konusunda Türkçe yardım eden uzman bir asistansın.
+
+Kullanıcı: {ad_soyad}
+Yaş/Cinsiyet: {age} / {gender} | Boy: {height} cm
 Aktivite: {activity}
 Mevcut kilo: {current} kg | Hedef: {target} kg | Kalan: {diff} kg
 Kilo trendi: {trend_str}
-Bugun yedikleri: {food_str} (Toplam: {int(total_kcal)} kcal)
-Egzersizler: {ex_str} (Yakilan: {int(ex_kcal)} kcal)
+Bugün yedikleri: {food_str} (Toplam: {int(total_kcal)} kcal / Hedef: {calorie_goal} kcal)
+Egzersizler: {ex_str} (Yakılan: {int(ex_kcal)} kcal)
 Net kalori: {int(total_kcal - ex_kcal)} kcal
 Uyku: {sleep_str}
-Regl dongusu: {period_str}
-Ozel notlar: {notes}
+Regl döngüsü: {period_str}
+Özel notlar: {notes}
 
-Turkce yanitla. Selamlama yapma. Direkt soruyu cevapla. Kisa, net ve destekleyici ol.
-"""
+Türkçe yanıtla. Selamlama yapma. Direkt soruyu cevapla. Kısa, net ve destekleyici ol."""
 
+
+# ════════════════════════════════════════════════════════════════════════════
+# KULLANICI ROUTE'LARI
+# ════════════════════════════════════════════════════════════════════════════
 
 @app.route('/')
 def ana_sayfa():
@@ -144,7 +164,7 @@ def register():
     email = data.get('email', '').strip()
     password = data.get('password', '')
     if not username or not email or not password:
-        return jsonify({"success": False, "message": "Lutfen tum alanlari doldur!"}), 400
+        return jsonify({"success": False, "message": "Lütfen tüm alanları doldur!"}), 400
     success, message = db.register_user(username, email, password)
     return jsonify({"success": success, "message": message})
 
@@ -158,7 +178,7 @@ def login():
     if success:
         session['user_id'] = result
         session['username'] = username
-        return jsonify({"success": True, "message": f"Hos geldin {username}!"})
+        return jsonify({"success": True, "message": f"Hoş geldin {username}!"})
     return jsonify({"success": False, "message": result})
 
 
@@ -171,25 +191,24 @@ def logout():
 @app.route('/soru-sor', methods=['POST'])
 def cevap_ver():
     if 'user_id' not in session:
-        return jsonify({"login_required": True, "reply": "FitBot'u kullanmak icin giris yapman gerekiyor!"})
+        return jsonify({"login_required": True, "reply": "FitBot'u kullanmak için giriş yapman gerekiyor!"})
     user_id = session['user_id']
     user_message = request.json.get("message", "").strip()
     if not user_message:
-        return jsonify({"reply": "Bir seyler yazmay unuttun!"})
+        return jsonify({"reply": "Bir şeyler yazmayı unuttun!"})
     history = db.get_chat_history(user_id, limit=12)
     db.save_chat_message(user_id, "user", user_message)
     messages = history + [{"role": "user", "content": user_message}]
     system = build_system_prompt(user_id)
-    reply = call_groq(messages, system, max_tokens=1500)
+    reply = call_groq(messages, system)
     db.save_chat_message(user_id, "assistant", reply)
     return jsonify({"reply": reply})
 
 
-# DÜZELTME: Türkçe karakter içeren route ASCII'ye çevrildi
 @app.route('/ogun-plani', methods=['POST'])
 def ogun_plani():
     if 'user_id' not in session:
-        return jsonify({"login_required": True, "reply": "Giris yapmalısin!"}), 401
+        return jsonify({"login_required": True}), 401
     user_id = session['user_id']
     profile = db.get_user_profile(user_id)
     notes = profile.get('notes', '') if profile else ''
@@ -198,14 +217,12 @@ def ogun_plani():
     diff = current - target
     hedef = "kilo vermek" if diff > 0 else (
         "kilo almak" if diff < 0 else "kilosunu korumak")
-    prompt = (f"Kullanici icin 7 gunluk ogun plani olustur.\n"
-              f"Hedef: {hedef} ({abs(diff):.1f} kg)\nOzel notlar: {notes}\n\n"
-              f"Format: Pazartesi - Kahvalti: ... - Ogle: ... - Aksam: ... - Atistirmalik: ...\n"
-              f"7 gunun tamamini yaz.")
+    prompt = (f"Kullanıcı için 7 günlük öğün planı oluştur.\n"
+              f"Hedef: {hedef} ({abs(diff):.1f} kg)\nÖzel notlar: {notes}\n\n"
+              f"Format: Pazartesi - Kahvaltı: ... - Öğle: ... - Akşam: ... - Atıştırmalık: ...\n7 günün tamamını yaz.")
     reply = call_groq([{"role": "user", "content": prompt}],
-                      "Turkce, pratik ogun planlari yapan diyetisyensin.",
-                      max_tokens=2000)
-    db.save_chat_message(user_id, "user", "Haftalik ogun plani olustur")
+                      "Türkçe, pratik öğün planları yapan diyetisyensin.", max_tokens=2000)
+    db.save_chat_message(user_id, "user", "Haftalık öğün planı oluştur")
     db.save_chat_message(user_id, "assistant", reply)
     return jsonify({"reply": reply})
 
@@ -213,22 +230,19 @@ def ogun_plani():
 @app.route('/tarif-oner', methods=['POST'])
 def tarif_oner():
     if 'user_id' not in session:
-        return jsonify({"login_required": True, "reply": "Giris yapmalısin!"}), 401
+        return jsonify({"login_required": True}), 401
     user_id = session['user_id']
     profile = db.get_user_profile(user_id)
     foods = db.get_today_foods(user_id)
     notes = profile.get('notes', '') if profile else ''
     total_kcal = sum(f['kcal'] for f in foods)
     kalan_kcal = max(0, 2200 - int(total_kcal))
-    ogun_tipi = request.json.get("meal_type", "aksam yemegi")
-    prompt = (f"Bugun {int(total_kcal)} kcal yedi, kalan: {kalan_kcal} kcal\n"
-              f"Ogun: {ogun_tipi}\nYasak malzeme: {notes}\n\n"
-              f"2 kisa tarif oner (isim, kalori, malzeme, 3 adim).")
+    ogun_tipi = request.json.get("meal_type", "akşam yemeği")
+    prompt = (f"Bugün {int(total_kcal)} kcal yedi, kalan: {kalan_kcal} kcal\n"
+              f"Öğün: {ogun_tipi}\nYasak malzeme: {notes}\n\n"
+              f"2 kısa tarif öner (isim, kalori, malzeme, 3 adım).")
     reply = call_groq([{"role": "user", "content": prompt}],
-                      "Turkce pratik tarif oneren diyetisyensin.",
-                      max_tokens=1000)
-    db.save_chat_message(user_id, "user", f"{ogun_tipi} tarif onerisi istedi")
-    db.save_chat_message(user_id, "assistant", reply)
+                      "Türkçe pratik tarif öneren diyetisyensin.", max_tokens=1000)
     return jsonify({"reply": reply})
 
 
@@ -245,11 +259,11 @@ def kilo_kaydet():
     target = profile.get('target_weight', 60)
     diff = round(float(kilo) - target, 1)
     if abs(diff) < 0.5:
-        msg = f"Hedefe ulastin! {kilo} kg"
+        msg = f"Hedefe ulaştın! {kilo} kg"
     elif diff > 0:
-        msg = f"{kilo} kg kaydedildi. Hedefe {diff} kg kaldi!"
+        msg = f"{kilo} kg kaydedildi. Hedefe {diff} kg kaldı!"
     else:
-        msg = f"{kilo} kg kaydedildi. Hedefe {abs(diff)} kg gectin!"
+        msg = f"{kilo} kg kaydedildi. Hedefe {abs(diff)} kg geçtin!"
     return jsonify({"success": True, "message": msg})
 
 
@@ -275,12 +289,12 @@ def hesapla_bmi():
         kilo = float(data.get("weight", 0))
         boy_cm = float(data.get("height", 0))
     except (TypeError, ValueError):
-        return jsonify({"error": "Gecersiz deger"}), 400
+        return jsonify({"error": "Geçersiz değer"}), 400
     if boy_cm <= 0 or kilo <= 0:
-        return jsonify({"error": "Boy ve kilo sifirdan buyuk olmali"}), 400
+        return jsonify({"error": "Boy ve kilo sıfırdan büyük olmalı"}), 400
     bmi = round(kilo / (boy_cm / 100) ** 2, 1)
     if bmi < 18.5:
-        kategori = "Zayif"
+        kategori = "Zayıf"
     elif bmi < 25:
         kategori = "Normal Kilolu"
     elif bmi < 30:
@@ -295,24 +309,19 @@ def hesapla_bmi():
 
 def _ai_kalori(food_name):
     system_prompt = """Sen uzman bir beslenme bilimcisi ve diyetisyensin.
-SADECE gecerli JSON don dur, baska hicbir sey yazma.
+SADECE geçerli JSON döndür, başka hiçbir şey yazma.
 JSON FORMATI:
-{"name":"yemek adi","kcal_per_100g":sayi,"portion":"porsiyon miktari","portion_kcal":sayi,"protein_per_100g":sayi,"carb_per_100g":sayi,"fat_per_100g":sayi}"""
-
-    prompt = f'Bu yiyecek icin kalori bilgisi ver: "{food_name}". SADECE JSON don dur:'
-
+{"name":"yemek adı","kcal_per_100g":sayı,"portion":"porsiyon miktarı","portion_kcal":sayı,"protein_per_100g":sayı,"carb_per_100g":sayı,"fat_per_100g":sayı}"""
+    prompt = f'Bu yiyecek için kalori bilgisi ver: "{food_name}". SADECE JSON döndür:'
     raw = call_groq([{"role": "user", "content": prompt}],
                     system_prompt, max_tokens=300)
     raw = raw.strip()
-
     code_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, re.DOTALL)
     if code_match:
         raw = code_match.group(1)
-
     json_match = re.search(r'\{[^{}]+\}', raw, re.DOTALL)
     if not json_match:
         return None
-
     try:
         data = json.loads(json_match.group())
         kcal_100 = data.get("kcal_per_100g", 0)
@@ -331,8 +340,7 @@ JSON FORMATI:
 def kalori_ara():
     food_name = request.json.get("food", "").strip()
     if not food_name:
-        return jsonify({"found": False, "message": "Yemek adi bos"})
-
+        return jsonify({"found": False, "message": "Yemek adı boş"})
     food_id = None
     ai_result = _ai_kalori(food_name)
     if ai_result:
@@ -345,7 +353,7 @@ def kalori_ara():
         fat = ai_result.get("fat_per_100g", 0)
         display_kcal = portion_kcal if portion_kcal > 0 else kcal_100
         if display_kcal == 0:
-            return jsonify({"found": False, "message": "Kalori hesaplanamadi."})
+            return jsonify({"found": False, "message": "Kalori hesaplanamadı."})
         if 'user_id' in session:
             food_id = db.add_food_log(session['user_id'], name, display_kcal)
         return jsonify({
@@ -355,8 +363,7 @@ def kalori_ara():
             "carb": carb, "fat": fat, "source": "ai",
             "message": f"{name}: ~{display_kcal} kcal ({portion})"
         })
-
-    return jsonify({"found": False, "message": f"'{food_name}' bulunamadi."})
+    return jsonify({"found": False, "message": f"'{food_name}' bulunamadı."})
 
 
 @app.route('/yemek-sil', methods=['POST'])
@@ -394,11 +401,11 @@ def bugunun_verileri():
         return jsonify({"water": 0, "foods": [], "exercises": [], "username": None, "profile": None})
     uid = session['user_id']
     return jsonify({
-        "profile": db.get_user_profile(uid),
-        "water": db.get_today_water(uid),
-        "foods": db.get_today_foods(uid),
+        "profile":   db.get_user_profile(uid),
+        "water":     db.get_today_water(uid),
+        "foods":     db.get_today_foods(uid),
         "exercises": db.get_today_exercises(uid),
-        "username": session.get('username', '')
+        "username":  session.get('username', '')
     })
 
 
@@ -445,7 +452,7 @@ def regl_kaydet():
         period_duration=int(data.get('period_duration', 5)),
         notes=data.get('notes', '')
     )
-    return jsonify({"success": ok, "message": "Regl verisi kaydedildi!" if ok else "Hata olustu"})
+    return jsonify({"success": ok, "message": "Regl verisi kaydedildi!" if ok else "Hata oluştu"})
 
 
 @app.route('/regl-verisi', methods=['GET'])
@@ -462,6 +469,143 @@ def favicon():
     return send_from_directory(app.root_path, 'avokado-ikon.png', mimetype='image/png')
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# BLOG ROUTE'LARI
+# ════════════════════════════════════════════════════════════════════════════
+
+def generate_blog_post():
+    """AI ile günlük blog yazısı üret."""
+    topic_mode = db.get_setting('blog_topic_mode', 'karma')
+
+    topics_beslenme = [
+        "Sabah kahvaltısının metabolizmaya etkisi",
+        "Protein tüketimini artırmanın 5 kolay yolu",
+        "Şeker bağımlılığını kırmak için pratik öneriler",
+        "Akdeniz diyetinin sağlığa faydaları",
+        "Aralıklı oruç: faydaları ve dikkat edilmesi gerekenler",
+        "Fermente gıdalar ve bağırsak sağlığı",
+        "Kış sebzelerinden besleyici tarifler",
+        "Su içmenin doğru zamanlaması",
+    ]
+    topics_egzersiz = [
+        "Evde yapılabilecek 20 dakikalık HIIT antrenmanı",
+        "Masa başı çalışanlar için günlük hareket önerileri",
+        "Egzersiz öncesi ve sonrası beslenme rehberi",
+        "Esneklik egzersizlerinin faydaları",
+        "Yürüyüşü daha etkili hale getirmenin yolları",
+        "Kas iyileşmesi için uyku ve dinlenmenin önemi",
+        "Kardiyovasküler sağlık için en iyi spor türleri",
+        "Motivasyonu yüksek tutmanın psikolojik yöntemleri",
+    ]
+
+    if topic_mode == 'beslenme':
+        topics = topics_beslenme
+    elif topic_mode == 'egzersiz':
+        topics = topics_egzersiz
+    else:
+        topics = topics_beslenme + topics_egzersiz
+
+    import random
+    topic = random.choice(topics)
+
+    category_map = {t: 'beslenme' for t in topics_beslenme}
+    category_map.update({t: 'egzersiz' for t in topics_egzersiz})
+    category = category_map.get(topic, 'genel')
+
+    emoji_map = {'beslenme': '🥗', 'egzersiz': '💪', 'genel': '🌿'}
+    emoji = emoji_map.get(category, '🌿')
+
+    system = """Sen FitLife AI için Türkçe blog yazıları yazan sağlıklı yaşam uzmanısın.
+Verilen konuda 400-500 kelimelik, bilgilendirici ve motive edici bir blog yazısı yaz.
+SADECE JSON döndür:
+{"title":"yazı başlığı","content":"tam yazı içeriği (paragraflar \\n\\n ile ayrılmış)","reading_time":dakika_sayısı}"""
+
+    prompt = f"Konu: {topic}\nBu konuda blog yazısı yaz."
+    raw = call_groq([{"role": "user", "content": prompt}],
+                    system, max_tokens=1000)
+
+    raw = raw.strip()
+    code_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, re.DOTALL)
+    if code_match:
+        raw = code_match.group(1)
+    json_match = re.search(r'\{.*\}', raw, re.DOTALL)
+    if json_match:
+        try:
+            data = json.loads(json_match.group())
+            return {
+                "title":        data.get("title", topic),
+                "content":      data.get("content", raw),
+                "category":     category,
+                "emoji":        emoji,
+                "reading_time": int(data.get("reading_time", 3))
+            }
+        except:
+            pass
+
+    return {
+        "title":        topic,
+        "content":      raw,
+        "category":     category,
+        "emoji":        emoji,
+        "reading_time": 3
+    }
+
+
+@app.route('/blog', methods=['GET'])
+def blog_listesi():
+    posts = db.get_blog_posts(limit=10)
+    return jsonify({"success": True, "posts": posts})
+
+
+@app.route('/blog/bugun', methods=['GET'])
+def blog_bugun():
+    post = db.get_today_blog_post()
+    if not post:
+        # Eğer otomatik yazı açıksa ve bugün yazı yoksa üret
+        if db.get_setting('blog_auto_enabled') == 'true':
+            result = generate_blog_post()
+            ok, post_id = db.create_blog_post(
+                title=result['title'],
+                content=result['content'],
+                category=result['category'],
+                emoji=result['emoji'],
+                reading_time=result['reading_time']
+            )
+            if ok:
+                post = db.get_blog_post_by_id(post_id)
+    if post:
+        # datetime'ı string'e çevir (JSON serileştirme için)
+        if isinstance(post.get('published_at'), datetime):
+            post['published_at'] = post['published_at'].strftime('%d %B %Y')
+        return jsonify({"success": True, "post": post})
+    return jsonify({"success": False, "message": "Bugün için blog yazısı bulunamadı."})
+
+
+@app.route('/blog/<int:post_id>', methods=['GET'])
+def blog_detay(post_id):
+    post = db.get_blog_post_by_id(post_id)
+    if not post:
+        return jsonify({"success": False, "message": "Yazı bulunamadı."}), 404
+    if isinstance(post.get('published_at'), datetime):
+        post['published_at'] = post['published_at'].strftime('%d %B %Y')
+    return jsonify({"success": True, "post": post})
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# ADMİN PANEL ROUTE'LARI
+# ════════════════════════════════════════════════════════════════════════════
+
+def admin_required(f):
+    from functools import wraps
+
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('admin'):
+            return redirect(url_for('admin_panel'))
+        return f(*args, **kwargs)
+    return decorated
+
+
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
     admin_password = os.environ.get("ADMIN_PASSWORD", "fitlife-admin-2026")
@@ -471,38 +615,105 @@ def admin_panel():
             session['admin'] = True
             return redirect(url_for('admin_panel'))
         else:
-            return jsonify({'error': 'Yanlış şifre'}), 401
-
-    # GET request
+            return render_template('admin.html', error="Şifre hatalı!", logged_in=False)
     if not session.get('admin'):
-        return """
-        <form method="post">
-          <h2>🔐 Admin Paneli</h2>
-          <input type="password" name="pw" placeholder="Şifre">
-          <button type="submit">Giriş</button>
-        </form>
-        """, 401
+        return render_template('admin.html', logged_in=False)
+    # İstatistikler
+    stats = {
+        "user_count":    db.get_user_count(),
+        "active_today":  db.get_today_active_users(),
+        "total_messages": db.get_total_messages(),
+        "blog_count":    db.get_blog_count(),
+    }
     users = db.get_all_users()
-    rows = "".join(
-        f"<tr><td>{u['id']}</td><td>{u['username']}</td><td>{u['email']}</td></tr>"
-        for u in users
-    )
-    return f"""
-    <html><head><style>
-      body{{font-family:sans-serif;padding:30px;background:#0f172a;color:#e2e8f0;margin:0}}
-      h2{{color:#a78bfa}} 
-      table{{border-collapse:collapse;width:100%;margin-top:20px}}
-      th,td{{border:1px solid #334155;padding:12px;text-align:left}}
-      th{{background:#1e293b;color:#a78bfa}}
-      tr:hover{{background:#1e293b}}
-    </style></head><body>
-      <h2>👥 Kayıtlı Kullanıcılar — {len(users)} kişi</h2>
-      <table>
-        <tr><th>ID</th><th>Kullanıcı Adı</th><th>Email</th></tr>
-        {rows}
-      </table>
-      <a href="/logout">Çıkış</a>
-    </body></html>"""
+    settings = db.get_all_settings()
+    posts = db.get_blog_posts(limit=20)
+    # datetime'ları string'e çevir
+    for p in posts:
+        if isinstance(p.get('published_at'), datetime):
+            p['published_at'] = p['published_at'].strftime('%d.%m.%Y')
+    return render_template('admin.html', logged_in=True,
+                           stats=stats, users=users,
+                           settings=settings, posts=posts)
+
+
+@app.route('/admin/ayarlar-kaydet', methods=['POST'])
+@admin_required
+def admin_ayarlar_kaydet():
+    data = request.json
+    allowed_keys = [
+        'groq_api_key', 'usda_api_key', 'groq_model', 'max_tokens',
+        'daily_calorie_goal', 'daily_water_goal',
+        'blog_auto_enabled', 'blog_topic_mode',
+        'site_title', 'maintenance_mode'
+    ]
+    filtered = {k: v for k, v in data.items() if k in allowed_keys}
+    ok = db.bulk_update_settings(filtered)
+    return jsonify({"success": ok, "message": "Ayarlar kaydedildi!" if ok else "Hata oluştu."})
+
+
+@app.route('/admin/kullanici-sil', methods=['POST'])
+@admin_required
+def admin_kullanici_sil():
+    user_id = request.json.get('user_id')
+    if not user_id:
+        return jsonify({"success": False, "message": "ID eksik"}), 400
+    ok, msg = db.delete_user(int(user_id))
+    return jsonify({"success": ok, "message": msg})
+
+
+@app.route('/admin/blog-olustur', methods=['POST'])
+@admin_required
+def admin_blog_olustur():
+    data = request.json or {}
+    # Manuel yazı mı yoksa AI ile mi?
+    if data.get('manual'):
+        title = data.get('title', '').strip()
+        content = data.get('content', '').strip()
+        if not title or not content:
+            return jsonify({"success": False, "message": "Başlık ve içerik gerekli."}), 400
+        category = data.get('category', 'genel')
+        emoji = data.get('emoji', '🌿')
+        reading_time = int(data.get('reading_time', 3))
+    else:
+        # AI ile üret
+        result = generate_blog_post()
+        title = result['title']
+        content = result['content']
+        category = result['category']
+        emoji = result['emoji']
+        reading_time = result['reading_time']
+
+    ok, post_id = db.create_blog_post(
+        title, content, category, emoji, reading_time)
+    return jsonify({"success": ok, "message": "Blog yazısı oluşturuldu!" if ok else str(post_id)})
+
+
+@app.route('/admin/blog-sil', methods=['POST'])
+@admin_required
+def admin_blog_sil():
+    post_id = request.json.get('post_id')
+    if not post_id:
+        return jsonify({"success": False, "message": "ID eksik"}), 400
+    db.delete_blog_post(int(post_id))
+    return jsonify({"success": True, "message": "Yazı silindi."})
+
+
+@app.route('/admin/istatistik', methods=['GET'])
+@admin_required
+def admin_istatistik():
+    return jsonify({
+        "user_count":     db.get_user_count(),
+        "active_today":   db.get_today_active_users(),
+        "total_messages": db.get_total_messages(),
+        "blog_count":     db.get_blog_count(),
+    })
+
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin', None)
+    return redirect(url_for('admin_panel'))
 
 
 if __name__ == '__main__':

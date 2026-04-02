@@ -112,6 +112,44 @@ class DatabaseManager:
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )''')
 
+            # ─── YENİ: AYARLAR TABLOSU ───────────────────────────────────────
+            c.execute('''CREATE TABLE IF NOT EXISTS settings (
+                key   TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )''')
+
+            # Varsayılan ayarları ekle (eğer yoksa)
+            default_settings = [
+                ('groq_api_key',      ''),
+                ('usda_api_key',      ''),
+                ('groq_model',        'llama-3.3-70b-versatile'),
+                ('max_tokens',        '1500'),
+                ('daily_calorie_goal', '2200'),
+                ('daily_water_goal',  '8'),
+                ('blog_auto_enabled', 'true'),
+                ('blog_topic_mode',   'karma'),
+                ('site_title',        'FitLife AI'),
+                ('maintenance_mode',  'false'),
+            ]
+            for key, val in default_settings:
+                c.execute(
+                    "INSERT INTO settings (key, value) VALUES (%s, %s) ON CONFLICT(key) DO NOTHING",
+                    (key, val)
+                )
+
+            # ─── YENİ: BLOG TABLOSU ──────────────────────────────────────────
+            c.execute('''CREATE TABLE IF NOT EXISTS blog_posts (
+                id           SERIAL PRIMARY KEY,
+                title        TEXT    NOT NULL,
+                content      TEXT    NOT NULL,
+                category     TEXT    DEFAULT 'genel',
+                emoji        TEXT    DEFAULT '🥗',
+                reading_time INTEGER DEFAULT 3,
+                published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                publish_date TEXT    NOT NULL,
+                is_active    BOOLEAN DEFAULT TRUE
+            )''')
+
             conn.commit()
         print("🥑 FitLife PostgreSQL Veritabanı hazır!")
 
@@ -180,7 +218,7 @@ class DatabaseManager:
         values.append(user_id)
         try:
             with self.get_connection() as conn:
-                c = conn.cursor()  # DÜZELTME: conn.execute → c.execute
+                c = conn.cursor()
                 c.execute(
                     f"UPDATE user_profiles SET {', '.join(fields)} WHERE user_id=%s", values
                 )
@@ -364,7 +402,6 @@ class DatabaseManager:
             print(f"Period log hatası: {e}")
             return False
 
-    # DÜZELTME: Metot sınıfın içine alındı (girinti düzeltildi)
     def get_latest_period_log(self, user_id):
         with self.get_connection() as conn:
             c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -379,11 +416,154 @@ class DatabaseManager:
     def get_all_users(self):
         with self.get_connection() as conn:
             c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            c.execute("SELECT id, username, email FROM users ORDER BY id DESC")
+            rows = c.fetchall()
+        return [dict(r) for r in rows]
+
+    def get_user_count(self):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute("SELECT COUNT(*) FROM users")
+            return c.fetchone()[0]
+
+    def get_today_active_users(self):
+        with self.get_connection() as conn:
+            c = conn.cursor()
             c.execute(
-                "SELECT id, username, email FROM users ORDER BY id DESC"
+                "SELECT COUNT(DISTINCT user_id) FROM chat_history WHERE day=%s",
+                (self.today(),)
+            )
+            return c.fetchone()[0]
+
+    def get_total_messages(self):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute("SELECT COUNT(*) FROM chat_history")
+            return c.fetchone()[0]
+
+    def delete_user(self, user_id):
+        try:
+            with self.get_connection() as conn:
+                c = conn.cursor()
+                for table in ['chat_history', 'food_log', 'exercise_log',
+                              'water_log', 'weight_log', 'sleep_logs',
+                              'period_log', 'user_profiles']:
+                    c.execute(
+                        f"DELETE FROM {table} WHERE user_id=%s", (user_id,))
+                c.execute("DELETE FROM users WHERE id=%s", (user_id,))
+                conn.commit()
+            return True, "Kullanıcı silindi."
+        except Exception as e:
+            return False, str(e)
+
+    # ─── AYARLAR ─────────────────────────────────────────────────────────────
+
+    def get_setting(self, key, default=''):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute("SELECT value FROM settings WHERE key=%s", (key,))
+            row = c.fetchone()
+        return row[0] if row else default
+
+    def set_setting(self, key, value):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute(
+                "INSERT INTO settings (key, value) VALUES (%s, %s) "
+                "ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value",
+                (key, str(value))
+            )
+            conn.commit()
+
+    def get_all_settings(self):
+        with self.get_connection() as conn:
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            c.execute("SELECT key, value FROM settings ORDER BY key")
+            rows = c.fetchall()
+        return {r['key']: r['value'] for r in rows}
+
+    def bulk_update_settings(self, settings_dict):
+        try:
+            with self.get_connection() as conn:
+                c = conn.cursor()
+                for key, value in settings_dict.items():
+                    c.execute(
+                        "INSERT INTO settings (key, value) VALUES (%s, %s) "
+                        "ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value",
+                        (key, str(value))
+                    )
+                conn.commit()
+            return True
+        except Exception as e:
+            print(f"Settings güncelleme hatası: {e}")
+            return False
+
+    # ─── BLOG ────────────────────────────────────────────────────────────────
+
+    def create_blog_post(self, title, content, category='genel', emoji='🥗', reading_time=3):
+        try:
+            with self.get_connection() as conn:
+                c = conn.cursor()
+                c.execute(
+                    """INSERT INTO blog_posts
+                       (title, content, category, emoji, reading_time, publish_date)
+                       VALUES (%s, %s, %s, %s, %s, %s) RETURNING id""",
+                    (title, content, category, emoji, reading_time, self.today())
+                )
+                post_id = c.fetchone()[0]
+                conn.commit()
+            return True, post_id
+        except Exception as e:
+            return False, str(e)
+
+    def get_today_blog_post(self):
+        with self.get_connection() as conn:
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            c.execute(
+                "SELECT * FROM blog_posts WHERE publish_date=%s AND is_active=TRUE ORDER BY id DESC LIMIT 1",
+                (self.today(),)
+            )
+            row = c.fetchone()
+        return dict(row) if row else None
+
+    def get_blog_posts(self, limit=10, offset=0):
+        with self.get_connection() as conn:
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            c.execute(
+                "SELECT * FROM blog_posts WHERE is_active=TRUE ORDER BY published_at DESC LIMIT %s OFFSET %s",
+                (limit, offset)
             )
             rows = c.fetchall()
         return [dict(r) for r in rows]
+
+    def get_blog_post_by_id(self, post_id):
+        with self.get_connection() as conn:
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            c.execute("SELECT * FROM blog_posts WHERE id=%s", (post_id,))
+            row = c.fetchone()
+        return dict(row) if row else None
+
+    def delete_blog_post(self, post_id):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute(
+                "UPDATE blog_posts SET is_active=FALSE WHERE id=%s", (post_id,))
+            conn.commit()
+
+    def get_blog_count(self):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute("SELECT COUNT(*) FROM blog_posts WHERE is_active=TRUE")
+            return c.fetchone()[0]
+
+    def blog_exists_today(self):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute(
+                "SELECT COUNT(*) FROM blog_posts WHERE publish_date=%s AND is_active=TRUE",
+                (self.today(),)
+            )
+            return c.fetchone()[0] > 0
 
 
 if __name__ == "__main__":

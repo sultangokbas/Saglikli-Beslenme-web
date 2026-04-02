@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitLife AI — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #f0f2f5;
+    --surface:  #ffffff;
+    --border:   #e2e8f0;
+    --text:     #1e293b;
+    --muted:    #64748b;
+    --accent:   #2563eb;
+    --accent-l: #eff6ff;
+    --green:    #16a34a;
+    --green-l:  #f0fdf4;
+    --red:      #dc2626;
+    --red-l:    #fef2f2;
+    --amber:    #d97706;
+    --amber-l:  #fffbeb;
+    --sidebar:  #1e293b;
+    --sidebar-t:#94a3b8;
+    --radius:   10px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+  /* ── GİRİŞ EKRANI ── */
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--sidebar); }
+  .login-card { background: white; border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .login-logo { font-size: 32px; text-align: center; margin-bottom: 8px; }
+  .login-title { font-size: 22px; font-weight: 700; text-align: center; color: var(--text); margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 32px; }
+  .login-card label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+  .login-card input[type=password] { width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 14px; font-size: 14px; font-family: 'Inter', sans-serif; color: var(--text); outline: none; transition: border-color 0.2s; }
+  .login-card input[type=password]:focus { border-color: var(--accent); }
+  .login-btn { width: 100%; background: var(--accent); color: white; border: none; border-radius: var(--radius); padding: 13px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 16px; font-family: 'Inter', sans-serif; transition: background 0.2s; }
+  .login-btn:hover { background: #1d4ed8; }
+  .error-msg { background: var(--red-l); color: var(--red); border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+
+  /* ── LAYOUT ── */
+  .admin-layout { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar { width: 240px; background: var(--sidebar); flex-shrink: 0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; }
+  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .sidebar-logo .logo-text { font-size: 18px; font-weight: 700; color: white; }
+  .sidebar-logo .logo-badge { font-size: 10px; background: var(--accent); color: white; padding: 2px 8px; border-radius: 20px; margin-left: 6px; font-weight: 600; }
+  .sidebar-logo .logo-sub { font-size: 11px; color: var(--sidebar-t); margin-top: 2px; }
+  .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+  .nav-section-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #475569; padding: 12px 8px 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--sidebar-t); cursor: pointer; transition: all 0.15s; font-size: 13px; font-weight: 500; border: none; background: none; width: 100%; text-align: left; text-decoration: none; }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+  .nav-item.active { background: var(--accent); color: white; }
+  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+  .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.07); }
+  .sidebar-footer a { display: flex; align-items: center; gap: 8px; color: #ef4444; font-size: 13px; text-decoration: none; padding: 8px 12px; border-radius: 8px; transition: background 0.15s; }
+  .sidebar-footer a:hover { background: rgba(239,68,68,0.1); }
+
+  /* ── MAIN ── */
+  .main-content { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
+  .topbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .topbar-date { font-size: 12px; color: var(--muted); }
+  .page-body { padding: 32px; flex: 1; }
+
+  /* ── TABS ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── STAT CARDS ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
+  .stat-card .sc-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-card .sc-value { font-size: 32px; font-weight: 700; color: var(--text); line-height: 1; }
+  .stat-card .sc-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .stat-card.blue  { border-top: 3px solid var(--accent); }
+  .stat-card.green { border-top: 3px solid var(--green); }
+  .stat-card.amber { border-top: 3px solid var(--amber); }
+  .stat-card.red   { border-top: 3px solid var(--red); }
+
+  /* ── CARD ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .card-body { padding: 20px; }
+
+  /* ── FORM ELEMANLAR ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px;
+    font-size: 13px; font-family: 'Inter', sans-serif; color: var(--text);
+    outline: none; transition: border-color 0.2s; background: white;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+  .form-group input[type=password] { letter-spacing: 2px; }
+  .form-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── TOGGLE ── */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-info .ti-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .toggle-info .ti-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 24px; cursor: pointer; transition: background 0.2s; }
+  .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+  .toggle input:checked + .toggle-slider { background: var(--green); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  /* ── BUTONLAR ── */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: all 0.15s; text-decoration: none; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-success { background: var(--green); color: white; }
+  .btn-success:hover { background: #15803d; }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-amber { background: var(--amber); color: white; }
+  .btn-amber:hover { background: #b45309; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ── TABLO ── */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); background: #f8fafc; border-bottom: 1px solid var(--border); text-align: left; }
+  .data-table td { padding: 12px 14px; font-size: 13px; color: var(--text); border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #fafafa; }
+
+  /* ── BADGE ── */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-blue   { background: var(--accent-l); color: var(--accent); }
+  .badge-green  { background: var(--green-l); color: var(--green); }
+  .badge-amber  { background: var(--amber-l); color: var(--amber); }
+  .badge-red    { background: var(--red-l); color: var(--red); }
+  .badge-gray   { background: #f1f5f9; color: var(--muted); }
+
+  /* ── ALERT ── */
+  .alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+  .alert.success { background: var(--green-l); color: var(--green); border: 1px solid #bbf7d0; }
+  .alert.error   { background: var(--red-l); color: var(--red); border: 1px solid #fecaca; }
+  .alert.show    { display: flex; align-items: center; gap: 8px; }
+
+  /* ── BLOG FORM ── */
+  .blog-mode-tabs { display: flex; gap: 0; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; width: fit-content; }
+  .blog-mode-tab { padding: 8px 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: white; color: var(--muted); font-family: 'Inter', sans-serif; transition: all 0.15s; }
+  .blog-mode-tab.active { background: var(--accent); color: white; }
+  .blog-form-manual { display: none; }
+  .blog-form-manual.show { display: block; }
+  textarea.blog-content { width: 100%; min-height: 180px; resize: vertical; }
+
+  /* ── TOAST ── */
+  #toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 13px 22px; border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.success { background: var(--green); }
+  #toast.error   { background: var(--red); }
+
+  /* ── SECTION HEADER ── */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .section-title { font-size: 18px; font-weight: 700; color: var(--text); }
+  .section-sub   { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 768px)  { .sidebar { width: 200px; } .main-content { margin-left: 200px; } .form-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+{% if not logged_in %}
+<!-- ════════════ GİRİŞ EKRANI ════════════ -->
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">🔐</div>
+    <div class="login-title">Admin Paneli</div>
+    <div class="login-sub">FitLife AI yönetim sistemi</div>
+    {% if error %}
+    <div class="error-msg">⚠️ {{ error }}</div>
+    {% endif %}
+    <form method="post" action="/admin">
+      <label>Yönetici Şifresi</label>
+      <input type="password" name="pw" placeholder="••••••••••" autofocus>
+      <button type="submit" class="login-btn">Giriş Yap →</button>
+    </form>
+  </div>
+</div>
+
+{% else %}
+<!-- ════════════ ADMIN PANEL ════════════ -->
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">🥑 FitLife <span class="logo-badge">Admin</span></div>
+      <div class="logo-sub">Yönetim Paneli</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Genel</div>
+      <button class="nav-item active" onclick="switchTab('dashboard', this)">
+        <span class="nav-icon">📊</span> Genel Bakış
+      </button>
+      <button class="nav-item" onclick="switchTab('users', this)">
+        <span class="nav-icon">👥</span> Kullanıcılar
+      </button>
+
+      <div class="nav-section-label">İçerik</div>
+      <button class="nav-item" onclick="switchTab('blog', this)">
+        <span class="nav-icon">📝</span> Blog Yönetimi
+      </button>
+
+      <div class="nav-section-label">Sistem</div>
+      <button class="nav-item" onclick="switchTab('api', this)">
+        <span class="nav-icon">🔑</span> API Anahtarları
+      </button>
+      <button class="nav-item" onclick="switchTab('settings', this)">
+        <span class="nav-icon">⚙️</span> Site Ayarları
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="/admin/logout">🚪 Çıkış Yap</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Genel Bakış</div>
+      <div class="topbar-date" id="topbarDate"></div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="tab-panel active" id="tab-dashboard">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Genel Bakış</div>
+            <div class="section-sub">Sistemin anlık durumu</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="refreshStats()">🔄 Yenile</button>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card blue">
+            <div class="sc-label">Toplam Kullanıcı</div>
+            <div class="sc-value" id="stat-users">{{ stats.user_count }}</div>
+            <div class="sc-sub">Kayıtlı hesap sayısı</div>
+          </div>
+          <div class="stat-card green">
+            <div class="sc-label">Bugün Aktif</div>
+            <div class="sc-value" id="stat-active">{{ stats.active_today }}</div>
+            <div class="sc-sub">FitBot kullanan kullanıcı</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="sc-label">Toplam Mesaj</div>
+            <div class="sc-value" id="stat-messages">{{ stats.total_messages }}</div>
+            <div class="sc-sub">AI sohbet geçmişi</div>
+          </div>
+          <div class="stat-card red">
+            <div class="sc-label">Blog Yazısı</div>
+            <div class="sc-value" id="stat-blog">{{ stats.blog_count }}</div>
+            <div class="sc-sub">Aktif yayındaki yazı</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🤖 Sistem Durumu</div>
+            </div>
+            <div class="card-body">
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="ti-label">Groq AI Bağlantısı</div>
+                  <div class="ti-sub">FitBot & kalori API</div>
+                </div>
+                <span class="badge badge-green" id="groq-status">Kontrol ediliyor...</span>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="ti-label">Veritabanı</div>
+                  <div class="ti-sub">PostgreSQL bağlantısı</div>
+                </div>
+                <span class="badge badge-green">Aktif ✓</span>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="ti-label">Blog Otomasyonu</div>
+                  <div class="ti-sub">Günlük saat 12:00 yazı üretimi</div>
+                </div>
+                <span class="badge {{ 'badge-green' if settings.get('blog_auto_enabled') == 'true' else 'badge-gray' }}" id="blog-auto-status">
+                  {{ 'Açık ✓' if settings.get('blog_auto_enabled') == 'true' else 'Kapalı' }}
+                </span>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="ti-label">Bakım Modu</div>
+                  <div class="ti-sub">Site erişimi kısıtlama</div>
+                </div>
+                <span class="badge {{ 'badge-red' if settings.get('maintenance_mode') == 'true' else 'badge-green' }}">
+                  {{ 'Açık ⚠️' if settings.get('maintenance_mode') == 'true' else 'Kapalı ✓' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📝 Bugünün Blog Yazısı</div>
+              <button class="btn btn-success btn-sm" onclick="aiOlustur()">✨ AI ile Üret</button>
+            </div>
+            <div class="card-body">
+              <div id="todayBlogInfo" style="font-size:13px;color:var(--muted)">Yükleniyor...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── KULLANICILAR ── -->
+      <div class="tab-panel" id="tab-users">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Kullanıcı Yönetimi</div>
+            <div class="section-sub">{{ users|length }} kayıtlı kullanıcı</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Kullanıcı Adı</th>
+                  <th>E-posta</th>
+                  <th>Durum</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for u in users %}
+                <tr id="user-row-{{ u.id }}">
+                  <td><span class="badge badge-gray">#{{ u.id }}</span></td>
+                  <td><strong>{{ u.username }}</strong></td>
+                  <td style="color:var(--muted)">{{ u.email }}</td>
+                  <td><span class="badge badge-green">Aktif</span></td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" onclick="kullaniciSil({{ u.id }}, '{{ u.username }}')">
+                      Sil
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BLOG ── -->
+      <div class="tab-panel" id="tab-blog">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Blog Yönetimi</div>
+            <div class="section-sub">{{ stats.blog_count }} aktif yazı</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div class="card-title">➕ Yeni Blog Yazısı</div>
+          </div>
+          <div class="card-body">
+            <div class="blog-mode-tabs">
+              <button class="blog-mode-tab active" onclick="setBlogMode('ai', this)">✨ AI ile Üret</button>
+              <button class="blog-mode-tab" onclick="setBlogMode('manual', this)">✏️ Manuel Yaz</button>
+            </div>
+
+            <div id="blog-ai-panel">
+              <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+                AI, beslenme & egzersiz konularından birini rastgele seçerek özgün bir yazı üretir.
+                Konu modu Site Ayarları'ndan değiştirilebilir.
+              </p>
+              <button class="btn btn-success" onclick="aiOlustur()">✨ AI Blog Yazısı Üret</button>
+            </div>
+
+            <div id="blog-manual-panel" class="blog-form-manual">
+              <div id="blog-alert" class="alert"></div>
+              <div class="form-grid">
+                <div class="form-group full">
+                  <label>Başlık</label>
+                  <input type="text" id="blog-title" placeholder="Blog yazısı başlığı">
+                </div>
+                <div class="form-group">
+                  <label>Kategori</label>
+                  <select id="blog-category">
+                    <option value="beslenme">🥗 Beslenme</option>
+                    <option value="egzersiz">💪 Egzersiz</option>
+                    <option value="genel">🌿 Genel</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Emoji</label>
+                  <input type="text" id="blog-emoji" value="🥗" maxlength="4">
+                </div>
+                <div class="form-group full">
+                  <label>İçerik</label>
+                  <textarea class="blog-content" id="blog-content" placeholder="Blog yazısı içeriği..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Okuma Süresi (dakika)</label>
+                  <input type="number" id="blog-reading-time" value="3" min="1" max="30">
+                </div>
+              </div>
+              <div style="margin-top:16px">
+                <button class="btn btn-primary" onclick="manuelBlogKaydet()">💾 Kaydet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Tüm Yazılar</div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Başlık</th>
+                  <th>Kategori</th>
+                  <th>Tarih</th>
+                  <th>Okuma</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="blog-table-body">
+                {% for p in posts %}
+                <tr id="blog-row-{{ p.id }}">
+                  <td><span class="badge badge-gray">#{{ p.id }}</span></td>
+                  <td><strong>{{ p.emoji }} {{ p.title }}</strong></td>
+                  <td>
+                    <span class="badge {{ 'badge-green' if p.category == 'beslenme' else ('badge-blue' if p.category == 'egzersiz' else 'badge-gray') }}">
+                      {{ p.category }}
+                    </span>
+                  </td>
+                  <td style="color:var(--muted)">{{ p.published_at }}</td>
+                  <td style="color:var(--muted)">{{ p.reading_time }} dk</td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" onclick="blogSil({{ p.id }})">Sil</button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── API ANAHTARLARI ── -->
+      <div class="tab-panel" id="tab-api">
+        <div class="section-header">
+          <div>
+            <div class="section-title">API Anahtarları</div>
+            <div class="section-sub">Harici servis bağlantıları</div>
+          </div>
+        </div>
+
+        <div id="api-alert" class="alert"></div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div class="card-title">🤖 Groq AI</div>
+            <span class="badge badge-blue">FitBot & Kalori</span>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label>API Anahtarı</label>
+                <input type="password" id="groq_api_key" 
+                       value="{{ settings.get('groq_api_key', '') }}"
+                       placeholder="gsk_...">
+                <div class="form-hint">Groq Console'dan alınır: console.groq.com</div>
+              </div>
+              <div class="form-group">
+                <label>Model</label>
+                <select id="groq_model">
+                  <option value="llama-3.3-70b-versatile" {{ 'selected' if settings.get('groq_model') == 'llama-3.3-70b-versatile' else '' }}>llama-3.3-70b-versatile (Önerilen)</option>
+                  <option value="llama-3.1-8b-instant" {{ 'selected' if settings.get('groq_model') == 'llama-3.1-8b-instant' else '' }}>llama-3.1-8b-instant (Hızlı)</option>
+                  <option value="mixtral-8x7b-32768" {{ 'selected' if settings.get('groq_model') == 'mixtral-8x7b-32768' else '' }}>mixtral-8x7b-32768</option>
+                  <option value="gemma2-9b-it" {{ 'selected' if settings.get('groq_model') == 'gemma2-9b-it' else '' }}>gemma2-9b-it</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Maks. Token</label>
+                <input type="number" id="max_tokens" 
+                       value="{{ settings.get('max_tokens', '1500') }}"
+                       min="500" max="4000" step="100">
+                <div class="form-hint">FitBot yanıt uzunluğu (500-4000)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🥦 USDA Food API</div>
+            <span class="badge badge-gray">Opsiyonel</span>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>API Anahtarı</label>
+              <input type="password" id="usda_api_key" 
+                     value="{{ settings.get('usda_api_key', '') }}"
+                     placeholder="DEMO_KEY veya kişisel anahtar">
+              <div class="form-hint">fdc.nal.usda.gov adresinden ücretsiz alınır</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px">
+          <button class="btn btn-primary" onclick="apiAyarlarKaydet()">💾 API Ayarlarını Kaydet</button>
+          <button class="btn btn-ghost" onclick="groqTest()" style="margin-left:10px">🔌 Bağlantıyı Test Et</button>
+        </div>
+      </div>
+
+      <!-- ── SİTE AYARLARI ── -->
+      <div class="tab-panel" id="tab-settings">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Site Ayarları</div>
+            <div class="section-sub">Uygulama geneli konfigürasyon</div>
+          </div>
+        </div>
+
+        <div id="settings-alert" class="alert"></div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div class="card-title">🎯 Hedef Değerleri</div>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Günlük Kalori Hedefi (kcal)</label>
+                <input type="number" id="daily_calorie_goal" 
+                       value="{{ settings.get('daily_calorie_goal', '2200') }}"
+                       min="1000" max="5000">
+                <div class="form-hint">Tüm kullanıcılar için varsayılan hedef</div>
+              </div>
+              <div class="form-group">
+                <label>Günlük Su Hedefi (bardak)</label>
+                <input type="number" id="daily_water_goal" 
+                       value="{{ settings.get('daily_water_goal', '8') }}"
+                       min="4" max="16">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div class="card-title">📝 Blog Otomasyonu</div>
+          </div>
+          <div class="card-body">
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="ti-label">Otomatik Blog Yazısı</div>
+                <div class="ti-sub">Her gün saat 12:00'de AI blog yazısı üretir</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="blog_auto_enabled"
+                       {{ 'checked' if settings.get('blog_auto_enabled') == 'true' else '' }}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div style="margin-top:16px">
+              <div class="form-group">
+                <label>Blog Konu Modu</label>
+                <select id="blog_topic_mode">
+                  <option value="karma" {{ 'selected' if settings.get('blog_topic_mode') == 'karma' else '' }}>Karma (Beslenme + Egzersiz)</option>
+                  <option value="beslenme" {{ 'selected' if settings.get('blog_topic_mode') == 'beslenme' else '' }}>Sadece Beslenme</option>
+                  <option value="egzersiz" {{ 'selected' if settings.get('blog_topic_mode') == 'egzersiz' else '' }}>Sadece Egzersiz</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div class="card-title">🌐 Genel</div>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Site Başlığı</label>
+                <input type="text" id="site_title" 
+                       value="{{ settings.get('site_title', 'FitLife AI') }}">
+              </div>
+            </div>
+            <div class="toggle-row" style="margin-top:16px">
+              <div class="toggle-info">
+                <div class="ti-label">Bakım Modu</div>
+                <div class="ti-sub">Açıkken kullanıcılar siteye erişemez</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="maintenance_mode"
+                       {{ 'checked' if settings.get('maintenance_mode') == 'true' else '' }}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="siteAyarlarKaydet()">💾 Ayarları Kaydet</button>
+      </div>
+
+    </div><!-- /page-body -->
+  </main>
+</div><!-- /admin-layout -->
+{% endif %}
+
+<div id="toast"></div>
+
+<script>
+// ── YARDIMCI ─────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+  t.className = 'show ' + type;
+  setTimeout(() => t.className = '', 3000);
+}
+
+function showAlert(id, msg, type = 'success') {
+  const el = document.getElementById(id);
+  el.textContent = (type === 'success' ? '✅ ' : '⚠️ ') + msg;
+  el.className = 'alert ' + type + ' show';
+  setTimeout(() => el.className = 'alert', 4000);
+}
+
+async function apiFetch(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+// ── TAB GEÇİŞİ ───────────────────────────────────────────────────────────────
+const tabTitles = {
+  dashboard: 'Genel Bakış',
+  users:     'Kullanıcı Yönetimi',
+  blog:      'Blog Yönetimi',
+  api:       'API Anahtarları',
+  settings:  'Site Ayarları'
+};
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('topbarTitle').textContent = tabTitles[id] || id;
+}
+
+// ── İSTATİSTİK YENİLE ─────────────────────────────────────────────────────────
+async function refreshStats() {
+  try {
+    const res = await fetch('/admin/istatistik');
+    const data = await res.json();
+    document.getElementById('stat-users').textContent    = data.user_count;
+    document.getElementById('stat-active').textContent   = data.active_today;
+    document.getElementById('stat-messages').textContent = data.total_messages;
+    document.getElementById('stat-blog').textContent     = data.blog_count;
+    showToast('İstatistikler güncellendi');
+  } catch { showToast('Güncellenemedi', 'error'); }
+}
+
+// ── BUGÜNÜN BLOGU ─────────────────────────────────────────────────────────────
+async function loadTodayBlog() {
+  try {
+    const res = await fetch('/blog/bugun');
+    const data = await res.json();
+    const el = document.getElementById('todayBlogInfo');
+    if (data.success && data.post) {
+      el.innerHTML = `
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <span style="font-size:28px">${data.post.emoji}</span>
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--text);margin-bottom:4px">${data.post.title}</div>
+            <div style="font-size:12px;color:var(--muted)">${data.post.category} · ${data.post.reading_time} dk okuma</div>
+          </div>
+        </div>`;
+    } else {
+      el.innerHTML = '<span style="color:var(--muted)">Bugün henüz yazı yok. ✨ AI ile üretebilirsiniz.</span>';
+    }
+  } catch {
+    document.getElementById('todayBlogInfo').textContent = 'Yüklenemedi.';
+  }
+}
+
+// ── GROQ BAĞLANTI TESTİ ───────────────────────────────────────────────────────
+async function groqTest() {
+  const statusEl = document.getElementById('groq-status');
+  statusEl.textContent = 'Test ediliyor...';
+  statusEl.className = 'badge badge-amber';
+  try {
+    const res = await fetch('/soru-sor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'merhaba' })
+    });
+    const data = await res.json();
+    if (data.reply && !data.reply.includes('hata') && !data.reply.includes('Bağlantı')) {
+      statusEl.textContent = 'Aktif ✓';
+      statusEl.className = 'badge badge-green';
+      showToast('Groq bağlantısı başarılı!');
+    } else {
+      statusEl.textContent = 'Hata ✗';
+      statusEl.className = 'badge badge-red';
+      showToast('Groq bağlantısı başarısız: ' + data.reply, 'error');
+    }
+  } catch {
+    statusEl.textContent = 'Hata ✗';
+    statusEl.className = 'badge badge-red';
+    showToast('Bağlantı testi başarısız', 'error');
+  }
+}
+
+// ── KULLANICI SİL ─────────────────────────────────────────────────────────────
+async function kullaniciSil(id, username) {
+  if (!confirm(`"${username}" kullanıcısını ve tüm verilerini silmek istediğinizden emin misiniz?`)) return;
+  const data = await apiFetch('/admin/kullanici-sil', { user_id: id });
+  if (data.success) {
+    document.getElementById('user-row-' + id)?.remove();
+    showToast('Kullanıcı silindi');
+    refreshStats();
+  } else {
+    showToast(data.message, 'error');
+  }
+}
+
+// ── BLOG: AI ÜRETİM ──────────────────────────────────────────────────────────
+async function aiOlustur() {
+  showToast('AI blog yazısı üretiyor...');
+  try {
+    const data = await apiFetch('/admin/blog-olustur', { manual: false });
+    if (data.success) {
+      showToast('Blog yazısı oluşturuldu! Sayfa yenileniyor...');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch { showToast('Hata oluştu', 'error'); }
+}
+
+// ── BLOG: MANUEL KAYDET ───────────────────────────────────────────────────────
+async function manuelBlogKaydet() {
+  const title   = document.getElementById('blog-title').value.trim();
+  const content = document.getElementById('blog-content').value.trim();
+  if (!title || !content) {
+    showAlert('blog-alert', 'Başlık ve içerik zorunludur.', 'error');
+    return;
+  }
+  const data = await apiFetch('/admin/blog-olustur', {
+    manual:       true,
+    title,
+    content,
+    category:     document.getElementById('blog-category').value,
+    emoji:        document.getElementById('blog-emoji').value,
+    reading_time: document.getElementById('blog-reading-time').value
+  });
+  if (data.success) {
+    showToast('Blog yazısı kaydedildi!');
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    showAlert('blog-alert', data.message, 'error');
+  }
+}
+
+// ── BLOG SİL ──────────────────────────────────────────────────────────────────
+async function blogSil(id) {
+  if (!confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) return;
+  const data = await apiFetch('/admin/blog-sil', { post_id: id });
+  if (data.success) {
+    document.getElementById('blog-row-' + id)?.remove();
+    showToast('Yazı silindi');
+    refreshStats();
+  } else {
+    showToast(data.message, 'error');
+  }
+}
+
+// ── BLOG MOD ──────────────────────────────────────────────────────────────────
+function setBlogMode(mode, btn) {
+  document.querySelectorAll('.blog-mode-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('blog-ai-panel').style.display     = mode === 'ai' ? 'block' : 'none';
+  document.getElementById('blog-manual-panel').style.display = mode === 'manual' ? 'block' : 'none';
+}
+
+// ── API AYARLARI KAYDET ───────────────────────────────────────────────────────
+async function apiAyarlarKaydet() {
+  const payload = {
+    groq_api_key: document.getElementById('groq_api_key').value.trim(),
+    groq_model:   document.getElementById('groq_model').value,
+    max_tokens:   document.getElementById('max_tokens').value,
+    usda_api_key: document.getElementById('usda_api_key').value.trim(),
+  };
+  const data = await apiFetch('/admin/ayarlar-kaydet', payload);
+  if (data.success) {
+    showAlert('api-alert', 'API ayarları kaydedildi!', 'success');
+    showToast('API ayarları kaydedildi!');
+  } else {
+    showAlert('api-alert', data.message, 'error');
+  }
+}
+
+// ── SİTE AYARLARI KAYDET ─────────────────────────────────────────────────────
+async function siteAyarlarKaydet() {
+  const payload = {
+    daily_calorie_goal: document.getElementById('daily_calorie_goal').value,
+    daily_water_goal:   document.getElementById('daily_water_goal').value,
+    blog_auto_enabled:  document.getElementById('blog_auto_enabled').checked ? 'true' : 'false',
+    blog_topic_mode:    document.getElementById('blog_topic_mode').value,
+    site_title:         document.getElementById('site_title').value,
+    maintenance_mode:   document.getElementById('maintenance_mode').checked ? 'true' : 'false',
+  };
+  const data = await apiFetch('/admin/ayarlar-kaydet', payload);
+  if (data.success) {
+    showAlert('settings-alert', 'Ayarlar kaydedildi!', 'success');
+    showToast('Ayarlar kaydedildi!');
+  } else {
+    showAlert('settings-alert', data.message, 'error');
+  }
+}
+
+// ── SAYFA YÜKLENME ────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Tarih
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const dateEl = document.getElementById('topbarDate');
+  if (dateEl) dateEl.textContent = now.toLocaleDateString('tr-TR', opts);
+
+  // Bugünün blogu
+  loadTodayBlog();
+
+  // Groq durum kontrolü (gecikmeli)
+  setTimeout(() => {
+    const el = document.getElementById('groq-status');
+    if (el) {
+      const key = '{{ settings.get("groq_api_key", "") }}';
+      if (key && key.length > 10) {
+        el.textContent = 'Anahtar mevcut ✓';
+        el.className = 'badge badge-green';
+      } else {
+        el.textContent = 'Anahtar yok ⚠️';
+        el.className = 'badge badge-amber';
+      }
+    }
+  }, 500);
+});
+</script>
+
+</body>
+</html>
