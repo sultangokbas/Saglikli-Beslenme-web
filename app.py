@@ -513,7 +513,7 @@ def generate_blog_post():
     category = category_map.get(topic, 'genel')
 
     emoji_map = {'beslenme': '🫐', 'egzersiz': '🧚‍♀️', 'genel': '😽'}
-    emoji = emoji_map.get(category, '🌿')
+    emoji = emoji_map.get(category, '😽')
 
     system = """Sen FitLife AI için Türkçe blog yazıları yazan sağlıklı yaşam uzmanısın.
 Verilen konuda 400-500 kelimelik, bilgilendirici ve motive edici bir blog yazısı yaz.
@@ -673,7 +673,7 @@ def admin_blog_olustur():
         if not title or not content:
             return jsonify({"success": False, "message": "Başlık ve içerik gerekli."}), 400
         category = data.get('category', 'genel')
-        emoji = data.get('emoji', '🌿')
+        emoji = data.get('emoji', '😽')
         reading_time = int(data.get('reading_time', 3))
     else:
         # AI ile üret
