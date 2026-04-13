@@ -195,21 +195,36 @@ class DatabaseManager:
         try:
             with self.get_connection() as conn:
                 c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+                # Önce email ile ara
                 c.execute("SELECT * FROM users WHERE email=%s", (email,))
                 user = c.fetchone()
                 if user:
                     return True, {'user_id': user['id'], 'username': user['username']}
+
+                # Kullanıcı adı çakışmasını önle
+                base_name = name
+                username = base_name
+                counter = 1
+                while True:
+                    c.execute(
+                        "SELECT id FROM users WHERE username=%s", (username,))
+                    if not c.fetchone():
+                        break
+                    username = f"{base_name}{counter}"
+                    counter += 1
+
                 c.execute(
                     "INSERT INTO users (username, email, password_hash) VALUES (%s,%s,%s) RETURNING id",
-                    (name, email, generate_password_hash(os.urandom(32).hex()))
+                    (username, email, generate_password_hash(os.urandom(32).hex()))
                 )
                 uid = c.fetchone()[0]
                 c.execute(
                     "INSERT INTO user_profiles (user_id) VALUES (%s)", (uid,))
                 conn.commit()
-                return True, {'user_id': uid, 'username': name}
+                return True, {'user_id': uid, 'username': username}
         except Exception as e:
-            return False, str(e)
+            print(f"Google DB hatası: {e}")
+        return False, str(e)
 
     # ─── PROFİL ───
     def get_user_profile(self, user_id):
