@@ -191,8 +191,7 @@ class DatabaseManager:
                 return True, user['id']
             return False, "Kullanıcı adı veya şifre hatalı. ❌"
 
-
-def register_or_login_google(self, email, name):
+    def register_or_login_google(self, email, name):
         try:
             with self.get_connection() as conn:
                 c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -211,8 +210,8 @@ def register_or_login_google(self, email, name):
                 return True, {'user_id': uid, 'username': name}
         except Exception as e:
             return False, str(e)
-    # ─── PROFİL ──────────────────────────────────────────────────────────────
 
+    # ─── PROFİL ───
     def get_user_profile(self, user_id):
         with self.get_connection() as conn:
             c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
