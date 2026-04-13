@@ -6,9 +6,19 @@ from datetime import date, datetime
 from flask import (Flask, render_template, request, jsonify,
                    send_from_directory, session, redirect, url_for)
 from database_manager import DatabaseManager
+from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "fitlife-secret-2026")
+
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=os.environ.get("GOOGLE_CLIENT_ID"),
+    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
 
 db = DatabaseManager()
 
@@ -228,6 +238,29 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
+    return redirect(url_for('ana_sayfa'))
+
+
+@app.route('/google-login')
+def google_login():
+    redirect_uri = url_for('google_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+
+@app.route('/google-callback')
+def google_callback():
+    token = google.authorize_access_token()
+    user_info = token.get('userinfo')
+    if not user_info:
+        return redirect(url_for('login_page'))
+
+    email = user_info.get('email')
+    name = user_info.get('given_name', email.split('@')[0])
+
+    success, result = db.register_or_login_google(email, name)
+    if success:
+        session['user_id'] = result['user_id']
+        session['username'] = result['username']
     return redirect(url_for('ana_sayfa'))
 
 

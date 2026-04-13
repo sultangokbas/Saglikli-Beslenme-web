@@ -191,6 +191,26 @@ class DatabaseManager:
                 return True, user['id']
             return False, "Kullanıcı adı veya şifre hatalı. ❌"
 
+
+def register_or_login_google(self, email, name):
+        try:
+            with self.get_connection() as conn:
+                c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+                c.execute("SELECT * FROM users WHERE email=%s", (email,))
+                user = c.fetchone()
+                if user:
+                    return True, {'user_id': user['id'], 'username': user['username']}
+                c.execute(
+                    "INSERT INTO users (username, email, password_hash) VALUES (%s,%s,%s) RETURNING id",
+                    (name, email, generate_password_hash(os.urandom(32).hex()))
+                )
+                uid = c.fetchone()[0]
+                c.execute(
+                    "INSERT INTO user_profiles (user_id) VALUES (%s)", (uid,))
+                conn.commit()
+                return True, {'user_id': uid, 'username': name}
+        except Exception as e:
+            return False, str(e)
     # ─── PROFİL ──────────────────────────────────────────────────────────────
 
     def get_user_profile(self, user_id):
