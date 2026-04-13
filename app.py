@@ -17,14 +17,18 @@ def today():
     return str(date.today())
 
 
-# ─── API KEY'LERİ DB'DEN OKU (env yoksa) ─────────────────────────────────────
-def get_groq_key():
-    key = db.get_setting('groq_api_key')
-    return key if key else os.environ.get("GROQ_API_KEY", "")
+# ─── OPENROUTER AYARLARI ──────────────────────────────────────────────────────
+def get_openrouter_key():
+    key = db.get_setting('openrouter_api_key')
+    return key if key else os.environ.get("OPENROUTER_API_KEY", "")
 
 
-def get_groq_model():
-    return db.get_setting('groq_model') or "llama-3.3-70b-versatile"
+def get_primary_model():
+    return db.get_setting('primary_model') or "meta-llama/llama-3.3-70b-instruct:free"
+
+
+def get_fallback_model():
+    return db.get_setting('fallback_model') or "mistralai/mistral-7b-instruct:free"
 
 
 def get_max_tokens():
@@ -34,47 +38,86 @@ def get_max_tokens():
         return 1500
 
 
-def call_groq(messages, system_prompt, max_tokens=None):
+def _filter_greeting(content):
+    """Selamlama satırlarını filtrele."""
+    lines = content.split('\n')
+    filtered = []
+    for line in lines:
+        lower = line.lower().strip()
+        if any(word in lower for word in ['merhaba', 'selam', 'hos geldin', 'sultan',
+                                          'gunaydin', 'iyi gunler', 'nasilsin', 'nasil yardimci']):
+            continue
+        filtered.append(line)
+    return '\n'.join(filtered).strip()
+
+
+def _call_openrouter(messages, system_prompt, model, max_tokens):
+    """Tek bir OpenRouter modeline istek at. Başarılıysa içerik döner, hata varsa Exception fırlatır."""
+    key = get_openrouter_key()
+    all_messages = [{"role": "system", "content": system_prompt}] + messages
+    resp = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://fitlife-ai.onrender.com",
+            "X-Title": "FitLife AI"
+        },
+        json={
+            "model": model,
+            "messages": all_messages,
+            "max_tokens": max_tokens,
+            "temperature": 0.7
+        },
+        timeout=30
+    )
+    result = resp.json()
+
+    if "choices" in result and result["choices"]:
+        content = result["choices"][0]["message"]["content"]
+        return _filter_greeting(content)
+
+    # Hata varsa exception fırlat ki fallback devreye girsin
+    error_msg = result.get("error", {})
+    if isinstance(error_msg, dict):
+        error_msg = error_msg.get("message", str(result))
+    raise Exception(f"Model yanıt vermedi: {error_msg}")
+
+
+def call_ai(messages, system_prompt, max_tokens=None):
+    """
+    Önce birincil modeli dener. Başarısız olursa yedek modele geçer.
+    İkisi de başarısız olursa kullanıcıya açıklayıcı mesaj döner.
+    """
     if max_tokens is None:
         max_tokens = get_max_tokens()
-    groq_key = get_groq_key()
-    model = get_groq_model()
+
+    primary = get_primary_model()
+    fallback = get_fallback_model()
+
+    # Birincil model denemesi
     try:
-        all_messages = [
-            {"role": "system", "content": system_prompt}] + messages
-        resp = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {groq_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": model,
-                "messages": all_messages,
-                "max_tokens": max_tokens,
-                "temperature": 0.7
-            },
-            timeout=30
-        )
-        result = resp.json()
-        if "choices" in result and result["choices"]:
-            content = result["choices"][0]["message"]["content"]
-            lines = content.split('\n')
-            filtered = []
-            for line in lines:
-                lower = line.lower().strip()
-                if any(word in lower for word in ['merhaba', 'selam', 'hos geldin', 'sultan',
-                                                  'gunaydin', 'iyi gunler', 'nasilsin', 'nasil yardimci']):
-                    continue
-                filtered.append(line)
-            return '\n'.join(filtered).strip()
-        elif "error" in result:
-            return f"AI hatası: {result['error'].get('message', 'Bilinmeyen hata')}"
-        return "Şu an cevap üretemiyorum, biraz sonra tekrar dene."
+        return _call_openrouter(messages, system_prompt, primary, max_tokens)
+    except requests.exceptions.Timeout:
+        primary_error = f"Birincil model ({primary}) zaman aşımına uğradı."
+    except Exception as e:
+        primary_error = str(e)
+
+    print(
+        f"[FitLife] Birincil model hatası: {primary_error} → Yedek modele geçiliyor: {fallback}")
+
+    # Yedek model denemesi
+    try:
+        return _call_openrouter(messages, system_prompt, fallback, max_tokens)
     except requests.exceptions.Timeout:
         return "AI yanıt vermede gecikiyor. Biraz sonra tekrar dene."
     except Exception as e:
-        return f"Bağlantı hatası: {str(e)}"
+        return f"Her iki AI modeli de şu an yanıt veremiyor. Lütfen biraz sonra tekrar dene. ({str(e)[:80]})"
+
+
+# Geriye dönük uyumluluk için alias (blog & kalori fonksiyonları bunu kullanıyor)
+def call_groq(messages, system_prompt, max_tokens=None):
+    return call_ai(messages, system_prompt, max_tokens)
 
 
 def build_system_prompt(user_id):
@@ -200,7 +243,7 @@ def cevap_ver():
     db.save_chat_message(user_id, "user", user_message)
     messages = history + [{"role": "user", "content": user_message}]
     system = build_system_prompt(user_id)
-    reply = call_groq(messages, system)
+    reply = call_ai(messages, system)
     db.save_chat_message(user_id, "assistant", reply)
     return jsonify({"reply": reply})
 
@@ -220,8 +263,8 @@ def ogun_plani():
     prompt = (f"Kullanıcı için 7 günlük öğün planı oluştur.\n"
               f"Hedef: {hedef} ({abs(diff):.1f} kg)\nÖzel notlar: {notes}\n\n"
               f"Format: Pazartesi - Kahvaltı: ... - Öğle: ... - Akşam: ... - Atıştırmalık: ...\n7 günün tamamını yaz.")
-    reply = call_groq([{"role": "user", "content": prompt}],
-                      "Türkçe, pratik öğün planları yapan diyetisyensin.", max_tokens=2000)
+    reply = call_ai([{"role": "user", "content": prompt}],
+                    "Türkçe, pratik öğün planları yapan diyetisyensin.", max_tokens=2000)
     db.save_chat_message(user_id, "user", "Haftalık öğün planı oluştur")
     db.save_chat_message(user_id, "assistant", reply)
     return jsonify({"reply": reply})
@@ -241,8 +284,8 @@ def tarif_oner():
     prompt = (f"Bugün {int(total_kcal)} kcal yedi, kalan: {kalan_kcal} kcal\n"
               f"Öğün: {ogun_tipi}\nYasak malzeme: {notes}\n\n"
               f"2 kısa tarif öner (isim, kalori, malzeme, 3 adım).")
-    reply = call_groq([{"role": "user", "content": prompt}],
-                      "Türkçe pratik tarif öneren diyetisyensin.", max_tokens=1000)
+    reply = call_ai([{"role": "user", "content": prompt}],
+                    "Türkçe pratik tarif öneren diyetisyensin.", max_tokens=1000)
     return jsonify({"reply": reply})
 
 
@@ -313,8 +356,8 @@ SADECE geçerli JSON döndür, başka hiçbir şey yazma.
 JSON FORMATI:
 {"name":"yemek adı","kcal_per_100g":sayı,"portion":"porsiyon miktarı","portion_kcal":sayı,"protein_per_100g":sayı,"carb_per_100g":sayı,"fat_per_100g":sayı}"""
     prompt = f'Bu yiyecek için kalori bilgisi ver: "{food_name}". SADECE JSON döndür:'
-    raw = call_groq([{"role": "user", "content": prompt}],
-                    system_prompt, max_tokens=300)
+    raw = call_ai([{"role": "user", "content": prompt}],
+                  system_prompt, max_tokens=300)
     raw = raw.strip()
     code_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, re.DOTALL)
     if code_match:
@@ -512,8 +555,8 @@ def generate_blog_post():
     category_map.update({t: 'egzersiz' for t in topics_egzersiz})
     category = category_map.get(topic, 'genel')
 
-    emoji_map = {'beslenme': '🫐', 'egzersiz': '🧚‍♀️', 'genel': '😽'}
-    emoji = emoji_map.get(category, '😽')
+    emoji_map = {'beslenme': '🥗', 'egzersiz': '💪', 'genel': '🌿'}
+    emoji = emoji_map.get(category, '🌿')
 
     system = """Sen FitLife AI için Türkçe blog yazıları yazan sağlıklı yaşam uzmanısın.
 Verilen konuda 400-500 kelimelik, bilgilendirici ve motive edici bir blog yazısı yaz.
@@ -521,8 +564,8 @@ SADECE JSON döndür:
 {"title":"yazı başlığı","content":"tam yazı içeriği (paragraflar \\n\\n ile ayrılmış)","reading_time":dakika_sayısı}"""
 
     prompt = f"Konu: {topic}\nBu konuda blog yazısı yaz."
-    raw = call_groq([{"role": "user", "content": prompt}],
-                    system, max_tokens=1000)
+    raw = call_ai([{"role": "user", "content": prompt}],
+                  system, max_tokens=1000)
 
     raw = raw.strip()
     code_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, re.DOTALL)
@@ -561,7 +604,6 @@ def blog_listesi():
 def blog_bugun():
     post = db.get_today_blog_post()
     if not post:
-        # Eğer otomatik yazı açıksa ve bugün yazı yoksa üret
         if db.get_setting('blog_auto_enabled') == 'true':
             result = generate_blog_post()
             ok, post_id = db.create_blog_post(
@@ -574,7 +616,6 @@ def blog_bugun():
             if ok:
                 post = db.get_blog_post_by_id(post_id)
     if post:
-        # datetime'ı string'e çevir (JSON serileştirme için)
         if isinstance(post.get('published_at'), datetime):
             post['published_at'] = post['published_at'].strftime('%d %B %Y')
         return jsonify({"success": True, "post": post})
@@ -618,17 +659,15 @@ def admin_panel():
             return render_template('admin.html', error="Şifre hatalı!", logged_in=False)
     if not session.get('admin'):
         return render_template('admin.html', logged_in=False, settings={})
-    # İstatistikler
     stats = {
-        "user_count":    db.get_user_count(),
-        "active_today":  db.get_today_active_users(),
+        "user_count":     db.get_user_count(),
+        "active_today":   db.get_today_active_users(),
         "total_messages": db.get_total_messages(),
-        "blog_count":    db.get_blog_count(),
+        "blog_count":     db.get_blog_count(),
     }
     users = db.get_all_users()
     settings = db.get_all_settings()
     posts = db.get_blog_posts(limit=20)
-    # datetime'ları string'e çevir
     for p in posts:
         if isinstance(p.get('published_at'), datetime):
             p['published_at'] = p['published_at'].strftime('%d.%m.%Y')
@@ -642,8 +681,8 @@ def admin_panel():
 def admin_ayarlar_kaydet():
     data = request.json
     allowed_keys = [
-        'groq_api_key', 'usda_api_key', 'groq_model', 'max_tokens',
-        'daily_calorie_goal', 'daily_water_goal',
+        'openrouter_api_key', 'primary_model', 'fallback_model', 'max_tokens',
+        'usda_api_key', 'daily_calorie_goal', 'daily_water_goal',
         'blog_auto_enabled', 'blog_topic_mode',
         'site_title', 'maintenance_mode'
     ]
@@ -666,17 +705,15 @@ def admin_kullanici_sil():
 @admin_required
 def admin_blog_olustur():
     data = request.json or {}
-    # Manuel yazı mı yoksa AI ile mi?
     if data.get('manual'):
         title = data.get('title', '').strip()
         content = data.get('content', '').strip()
         if not title or not content:
             return jsonify({"success": False, "message": "Başlık ve içerik gerekli."}), 400
         category = data.get('category', 'genel')
-        emoji = data.get('emoji', '😽')
+        emoji = data.get('emoji', '🌿')
         reading_time = int(data.get('reading_time', 3))
     else:
-        # AI ile üret
         result = generate_blog_post()
         title = result['title']
         content = result['content']
@@ -708,6 +745,42 @@ def admin_istatistik():
         "total_messages": db.get_total_messages(),
         "blog_count":     db.get_blog_count(),
     })
+
+
+@app.route('/admin/ai-test', methods=['POST'])
+@admin_required
+def admin_ai_test():
+    """Birincil ve yedek modeli test eder, sonuçları döner."""
+    primary = get_primary_model()
+    fallback = get_fallback_model()
+    results = {}
+
+    # Birincil test
+    try:
+        r = _call_openrouter(
+            [{"role": "user", "content": "Merhaba, çalışıyor musun?"}],
+            "Kısa ve net yanıt ver.",
+            primary, 50
+        )
+        results['primary'] = {"ok": True, "model": primary, "response": r[:80]}
+    except Exception as e:
+        results['primary'] = {"ok": False, "model": primary, "error": str(e)[
+            :120]}
+
+    # Yedek test
+    try:
+        r = _call_openrouter(
+            [{"role": "user", "content": "Merhaba, çalışıyor musun?"}],
+            "Kısa ve net yanıt ver.",
+            fallback, 50
+        )
+        results['fallback'] = {"ok": True,
+                               "model": fallback, "response": r[:80]}
+    except Exception as e:
+        results['fallback'] = {"ok": False, "model": fallback, "error": str(e)[
+            :120]}
+
+    return jsonify(results)
 
 
 @app.route('/admin/logout')

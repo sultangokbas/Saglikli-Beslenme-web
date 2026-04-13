@@ -780,6 +780,21 @@ async function updateNav() {
         renderFoodLog();
         updateCalorieUI();
       }
+      // Su yükle
+      if (data.water) {
+        waterCount = data.water;
+        buildGlasses();
+        document.getElementById('waterCount').textContent = waterCount;
+        document.getElementById('waterMl').textContent = waterCount * 250;
+      }
+      // Egzersizleri yükle
+      if (data.exercises && data.exercises.length > 0) {
+        data.exercises.forEach(e => {
+          exercises.push({emoji: e.emoji, name: e.name, meta: '', kcal: e.kcal});
+          exTotalKcal += e.kcal;
+        });
+        renderExLog();
+      }
     } else {
       area.innerHTML = `<button class="nav-cta" onclick="window.location.href='/login-page'">🔑 Giriş Yap</button>`;
     }
@@ -874,9 +889,14 @@ function buildGlasses() {
     c.appendChild(g);
   }
 }
-function updateWater(){
+async function updateWater(){
   document.getElementById('waterCount').textContent=waterCount;
   document.getElementById('waterMl').textContent=waterCount*250;
+  try{
+    await fetch('/su-kaydet',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({count:waterCount})});
+  }catch(e){}
 }
 function resetWater(){ waterCount=0; buildGlasses(); updateWater(); }
 buildGlasses();
@@ -1220,11 +1240,16 @@ function closeModalBtn(){ document.getElementById('recipeModal').classList.remov
 
 // ── EXERCISE ─────────────────────────────────────────────────────
 let exercises=[], exTotalKcal=0;
-function addExercise(){
+async function addExercise(){
   const sel=document.getElementById('exSelect'); if(!sel.value)return;
   const [emoji,name,meta,kcal]=sel.value.split('|');
   exercises.push({emoji,name,meta,kcal:parseInt(kcal)});
   exTotalKcal+=parseInt(kcal); sel.value=''; renderExLog();
+  try{
+    await fetch('/egzersiz-ekle',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,emoji,kcal:parseInt(kcal)})});
+  }catch(e){}
 }
 function removeExercise(idx){ exTotalKcal-=exercises[idx].kcal; exercises.splice(idx,1); renderExLog(); }
 function renderExLog(){
