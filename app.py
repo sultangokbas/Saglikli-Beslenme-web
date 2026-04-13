@@ -249,18 +249,34 @@ def google_login():
 
 @app.route('/google-callback')
 def google_callback():
-    token = google.authorize_access_token()
-    user_info = token.get('userinfo')
-    if not user_info:
-        return redirect(url_for('login_page'))
+    try:
+        token = google.authorize_access_token()
+        user_info = token.get('userinfo')
+        if not user_info:
+            print("Google userinfo alınamadı!")
+            return redirect(url_for('login_page'))
 
-    email = user_info.get('email')
-    name = user_info.get('given_name', email.split('@')[0])
+        email = user_info.get('email')
+        name = user_info.get('given_name', email.split('@')[0])
 
-    success, result = db.register_or_login_google(email, name)
-    if success:
-        session['user_id'] = result['user_id']
-        session['username'] = result['username']
+        print(f"Google login: {email}, {name}")
+
+        success, result = db.register_or_login_google(email, name)
+
+        print(f"DB sonuç: success={success}, result={result}")
+
+        if success and isinstance(result, dict):
+            session['user_id'] = result['user_id']
+            session['username'] = result['username']
+            session.modified = True
+            print(
+                f"Session set: user_id={session.get('user_id')}, username={session.get('username')}")
+        else:
+            print(f"Google login başarısız: {result}")
+
+    except Exception as e:
+        print(f"Google callback hatası: {e}")
+
     return redirect(url_for('ana_sayfa'))
 
 
