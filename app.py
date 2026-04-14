@@ -70,7 +70,7 @@ def _call_openrouter(messages, system_prompt, model, max_tokens):
         headers={
             "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://fitlife-ai.onrender.com",
+            "HTTP-Referer": "https://saglikli-beslenme-web-py1h.onrender.com",
             "X-Title": "FitLife AI"
         },
         json={
