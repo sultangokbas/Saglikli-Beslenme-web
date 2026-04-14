@@ -10,6 +10,9 @@ from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "fitlife-secret-2026")
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 oauth = OAuth(app)
 google = oauth.register(
@@ -27,19 +30,7 @@ def today():
     return str(date.today())
 
 
-# ─── OPENROUTER AYARLARI ──────────────────────────────────────────────────────
-def get_openrouter_key():
-    key = db.get_setting('openrouter_api_key')
-    return key if key else os.environ.get("OPENROUTER_API_KEY", "")
-
-
-def get_primary_model():
-    return db.get_setting('primary_model') or "meta-llama/llama-3.3-70b-instruct:free"
-
-
-def get_fallback_model():
-    return db.get_setting('fallback_model') or "mistralai/mistral-7b-instruct:free"
-
+# ─── GROQ API AYARLARI ───────────────────────────────────────────────────────
 
 def get_max_tokens():
     try:
@@ -61,17 +52,15 @@ def _filter_greeting(content):
     return '\n'.join(filtered).strip()
 
 
-def _call_openrouter(messages, system_prompt, model, max_tokens):
-    """Tek bir OpenRouter modeline istek at. Başarılıysa içerik döner, hata varsa Exception fırlatır."""
-    key = get_openrouter_key()
+def _call_groq_api(messages, system_prompt, model, max_tokens):
+    """Groq API'ye istek at."""
+    key = os.environ.get("GROQ_API_KEY", "")
     all_messages = [{"role": "system", "content": system_prompt}] + messages
     resp = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
+        "https://api.groq.com/openai/v1/chat/completions",
         headers={
             "Authorization": f"Bearer {key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://saglikli-beslenme-web-py1h.onrender.com",
-            "X-Title": "FitLife AI"
+            "Content-Type": "application/json"
         },
         json={
             "model": model,
@@ -82,12 +71,9 @@ def _call_openrouter(messages, system_prompt, model, max_tokens):
         timeout=30
     )
     result = resp.json()
-
     if "choices" in result and result["choices"]:
         content = result["choices"][0]["message"]["content"]
         return _filter_greeting(content)
-
-    # Hata varsa exception fırlat ki fallback devreye girsin
     error_msg = result.get("error", {})
     if isinstance(error_msg, dict):
         error_msg = error_msg.get("message", str(result))
@@ -97,35 +83,32 @@ def _call_openrouter(messages, system_prompt, model, max_tokens):
 def call_ai(messages, system_prompt, max_tokens=None):
     """
     Önce birincil modeli dener. Başarısız olursa yedek modele geçer.
-    İkisi de başarısız olursa kullanıcıya açıklayıcı mesaj döner.
     """
     if max_tokens is None:
         max_tokens = get_max_tokens()
 
-    primary = get_primary_model()
-    fallback = get_fallback_model()
+    primary = "llama-3.3-70b-versatile"
+    fallback = "llama-3.1-8b-instant"
 
-    # Birincil model denemesi
     try:
-        return _call_openrouter(messages, system_prompt, primary, max_tokens)
+        return _call_groq_api(messages, system_prompt, primary, max_tokens)
     except requests.exceptions.Timeout:
-        primary_error = f"Birincil model ({primary}) zaman aşımına uğradı."
+        primary_error = "Birincil model zaman aşımına uğradı."
     except Exception as e:
         primary_error = str(e)
 
     print(
-        f"[FitLife] Birincil model hatası: {primary_error} → Yedek modele geçiliyor: {fallback}")
+        f"[FitLife] Birincil model hatası: {primary_error} → Yedek modele geçiliyor.")
 
-    # Yedek model denemesi
     try:
-        return _call_openrouter(messages, system_prompt, fallback, max_tokens)
+        return _call_groq_api(messages, system_prompt, fallback, max_tokens)
     except requests.exceptions.Timeout:
         return "AI yanıt vermede gecikiyor. Biraz sonra tekrar dene."
     except Exception as e:
         return f"Her iki AI modeli de şu an yanıt veremiyor. Lütfen biraz sonra tekrar dene. ({str(e)[:80]})"
 
 
-# Geriye dönük uyumluluk için alias (blog & kalori fonksiyonları bunu kullanıyor)
+# Geriye dönük uyumluluk için alias
 def call_groq(messages, system_prompt, max_tokens=None):
     return call_ai(messages, system_prompt, max_tokens)
 
@@ -243,7 +226,7 @@ def logout():
 
 @app.route('/google-login')
 def google_login():
-    redirect_uri = url_for('google_callback', _external=True)
+    redirect_uri = url_for('google_callback', _external=True, _scheme='https')
     return google.authorize_redirect(redirect_uri)
 
 
@@ -730,7 +713,7 @@ def admin_panel():
 def admin_ayarlar_kaydet():
     data = request.json
     allowed_keys = [
-        'openrouter_api_key', 'primary_model', 'fallback_model', 'max_tokens',
+        'groq_api_key', 'primary_model', 'fallback_model', 'max_tokens',
         'usda_api_key', 'daily_calorie_goal', 'daily_water_goal',
         'blog_auto_enabled', 'blog_topic_mode',
         'site_title', 'maintenance_mode'
@@ -799,14 +782,13 @@ def admin_istatistik():
 @app.route('/admin/ai-test', methods=['POST'])
 @admin_required
 def admin_ai_test():
-    """Birincil ve yedek modeli test eder, sonuçları döner."""
-    primary = get_primary_model()
-    fallback = get_fallback_model()
+    """Birincil ve yedek modeli test eder."""
+    primary = "llama-3.3-70b-versatile"
+    fallback = "llama-3.1-8b-instant"
     results = {}
 
-    # Birincil test
     try:
-        r = _call_openrouter(
+        r = _call_groq_api(
             [{"role": "user", "content": "Merhaba, çalışıyor musun?"}],
             "Kısa ve net yanıt ver.",
             primary, 50
@@ -816,9 +798,8 @@ def admin_ai_test():
         results['primary'] = {"ok": False, "model": primary, "error": str(e)[
             :120]}
 
-    # Yedek test
     try:
-        r = _call_openrouter(
+        r = _call_groq_api(
             [{"role": "user", "content": "Merhaba, çalışıyor musun?"}],
             "Kısa ve net yanıt ver.",
             fallback, 50
