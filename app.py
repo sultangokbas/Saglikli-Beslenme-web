@@ -10,14 +10,9 @@ from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "fitlife-secret-2026")
-# app.config['SESSION_COOKIE_SECURE'] = True
-# app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-# app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SECURE'] = False        # Render HTTP redirect için
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'     # 'None' yerine 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_NAME'] = 'fitlife_session'
-app.config['PERMANENT_SESSION_LIFETIME'] = 86400   # 1 gün
 
 oauth = OAuth(app)
 google = oauth.register(
@@ -241,18 +236,27 @@ def google_callback():
         token = google.authorize_access_token()
         user_info = token.get('userinfo')
         if not user_info:
+            print("Google userinfo alınamadı!")
             return redirect(url_for('login_page'))
 
         email = user_info.get('email')
         name = user_info.get('given_name', email.split('@')[0])
 
+        print(f"Google login: {email}, {name}")
+
         success, result = db.register_or_login_google(email, name)
 
+        print(f"DB sonuç: success={success}, result={result}")
+
         if success and isinstance(result, dict):
-            session.permanent = True          # ← BU SATIR ÖNEMLİ
             session['user_id'] = result['user_id']
             session['username'] = result['username']
             session.modified = True
+            print(
+                f"Session set: user_id={session.get('user_id')}, username={session.get('username')}")
+        else:
+            print(f"Google login başarısız: {result}")
+
     except Exception as e:
         print(f"Google callback hatası: {e}")
 
