@@ -331,6 +331,52 @@
   .reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease}
   .reveal.visible{opacity:1;transform:translateY(0)}
 
+  /* PROGRAM DETAY MODALI */
+  .prog-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(14px);z-index:400;display:none;align-items:center;justify-content:center;padding:20px}
+  .prog-modal-overlay.open{display:flex}
+  .prog-modal-box{background:#111f13;border:1px solid rgba(181,229,80,0.18);border-radius:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;position:relative;animation:modalIn 0.35s cubic-bezier(0.34,1.56,0.64,1);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent}
+  .prog-modal-hero{height:160px;display:flex;align-items:center;justify-content:center;font-size:72px;border-radius:28px 28px 0 0;position:relative;overflow:hidden}
+  .prog-modal-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(17,31,19,0.9))}
+  .prog-modal-close{position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);border:none;color:white;width:34px;height:34px;border-radius:50%;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10}
+  .prog-modal-body{padding:24px 28px 32px}
+  .prog-modal-title{font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--cream);margin-bottom:6px;letter-spacing:-0.5px}
+  .prog-modal-sub{font-size:14px;opacity:0.5;margin-bottom:20px}
+  .prog-modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+  .pms{background:rgba(255,255,255,0.05);border-radius:14px;padding:14px;text-align:center}
+  .pms-val{font-family:'Fraunces',serif;font-size:24px;font-weight:800;color:var(--lime)}
+  .pms-label{font-size:11px;opacity:0.4;margin-top:3px}
+  .prog-modal-section{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.35;margin:18px 0 10px}
+  .prog-modal-tips{display:flex;flex-direction:column;gap:8px}
+  .pmt{display:flex;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.04);border-radius:12px;font-size:13px;line-height:1.5;align-items:flex-start}
+  .pmt-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+  .prog-modal-start-btn{width:100%;background:linear-gradient(135deg,var(--green),var(--green-light));color:white;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;margin-top:18px;transition:all 0.25s;font-family:'DM Sans',sans-serif;letter-spacing:0.3px}
+  .prog-modal-start-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(45,158,87,0.4)}
+
+  /* GRAFİK ANALİZ BÖLÜMÜ */
+  .analytics{background:var(--dark);position:relative}
+  .analytics::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 100%,rgba(45,158,87,0.06),transparent);pointer-events:none}
+  .analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:52px}
+  .analytics-card{background:var(--mid);border-radius:var(--radius);padding:28px;border:1px solid rgba(255,255,255,0.05)}
+  .analytics-card.wide{grid-column:1/-1}
+  .ac-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--cream);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .ac-sub{font-size:12px;opacity:0.4;margin-bottom:20px}
+  .chart-canvas-wrap{position:relative;width:100%;height:180px}
+  canvas.chart{width:100%!important;height:180px!important}
+  .analytics-login-prompt{text-align:center;padding:48px 20px;opacity:0.35}
+  .analytics-login-prompt .alp-icon{font-size:40px;margin-bottom:10px}
+  .analytics-login-prompt p{font-size:14px}
+  .analytics-mini{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
+  .am-card{background:rgba(255,255,255,0.04);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05);text-align:center}
+  .am-val{font-family:'Fraunces',serif;font-size:26px;font-weight:800;color:var(--lime);line-height:1}
+  .am-label{font-size:11px;opacity:0.4;margin-top:5px}
+  .am-trend{font-size:10px;margin-top:4px;font-weight:600}
+  .am-trend.up{color:#f26b2e}.am-trend.down{color:#34d399}.am-trend.neutral{color:rgba(255,255,255,0.35)}
+  .weight-input-row{display:flex;gap:10px;margin-top:16px}
+  .weight-input-row input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--cream);border-radius:var(--radius-sm);padding:11px 16px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s}
+  .weight-input-row input:focus{border-color:var(--lime)}
+  .weight-input-row button{background:var(--lime);color:var(--dark);border:none;border-radius:var(--radius-sm);padding:11px 20px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+  .weight-input-row button:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(181,229,80,0.3)}
+
   /* MOBİL */
   @media(max-width:1100px){.programs-split{grid-template-columns:1fr}.profile-side-card{position:static}}
   @media(max-width:900px){.fitbot-layout{grid-template-columns:1fr}.fitbot-chat-panel{position:static;height:500px}.fitbot-features{grid-template-columns:1fr}}
@@ -344,6 +390,9 @@
     .hero-stats{gap:24px}.floating-card{display:none}
     footer{flex-direction:column;gap:20px;text-align:center}
     .period-inputs{grid-template-columns:1fr}
+    .analytics-grid{grid-template-columns:1fr}
+    .analytics-card.wide{grid-column:1}
+    .analytics-mini{grid-template-columns:repeat(2,1fr)}
   }
 </style>
 </head>
@@ -362,7 +411,7 @@
     <li><a href="#bmi">BMI Hesabı</a></li>
     <li><a href="#blog">Blog</a></li>
     <li><a href="#fitbot">FitBot</a></li>
-    
+    <li><a href="#analytics">Analiz</a></li>
   </ul>
   <div style="display:flex;gap:10px;align-items:center" id="navAuthArea"></div>
 </nav>
@@ -646,6 +695,65 @@
   </div>
 </div>
 
+<!-- PROGRAM DETAY MODALI -->
+<div class="prog-modal-overlay" id="progDetailModal" onclick="if(event.target===this)closeProgModal()">
+  <div class="prog-modal-box">
+    <button class="prog-modal-close" onclick="closeProgModal()">×</button>
+    <div class="prog-modal-hero" id="progModalHero"></div>
+    <div class="prog-modal-body">
+      <div class="prog-modal-title" id="progModalTitle"></div>
+      <div class="prog-modal-sub" id="progModalSub"></div>
+      <div class="prog-modal-stats" id="progModalStats"></div>
+      <div class="prog-modal-section">Program Detayları</div>
+      <div class="prog-modal-tips" id="progModalTips"></div>
+      <button class="prog-modal-start-btn" id="progModalStartBtn">Bu Programı Seç ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANALİZ -->
+<section class="analytics reveal" id="analytics">
+  <div class="section-tag">● Analiz</div>
+  <h2 class="section-title">İlerleme <span style="color:var(--lime)">grafikle</span><br>görünür olur.</h2>
+
+  <div id="analyticsLoginPrompt" style="display:none" class="analytics-login-prompt">
+    <div class="alp-icon">📊</div>
+    <p>İlerleme grafiklerini görmek için giriş yap.</p>
+    <button onclick="window.location.href='/login-page'" style="margin-top:14px;background:var(--lime);color:var(--dark);border:none;border-radius:30px;padding:12px 28px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Giriş Yap</button>
+  </div>
+
+  <div id="analyticsContent" style="display:none">
+    <div class="analytics-mini" id="analyticsMini">
+      <div class="am-card"><div class="am-val" id="amCurrentWeight">—</div><div class="am-label">Mevcut Kilo</div><div class="am-trend neutral" id="amWeightTrend">—</div></div>
+      <div class="am-card"><div class="am-val" id="amTargetDiff">—</div><div class="am-label">Hedefe Kalan</div><div class="am-trend neutral" id="amTargetDir">—</div></div>
+      <div class="am-card"><div class="am-val" id="amAvgKcal">—</div><div class="am-label">Ort. Günlük Kcal</div><div class="am-trend neutral">7 gün</div></div>
+      <div class="am-card"><div class="am-val" id="amTotalEx">—</div><div class="am-label">Toplam Yakılan</div><div class="am-trend neutral">7 gün</div></div>
+    </div>
+
+    <div class="analytics-grid" style="margin-top:24px">
+      <div class="analytics-card wide">
+        <div class="ac-title">⚖️ Kilo Takibi</div>
+        <div class="ac-sub">Kaydettiğin kilo değişimleri</div>
+        <div class="chart-canvas-wrap"><canvas class="chart" id="weightChart"></canvas></div>
+        <div class="weight-input-row">
+          <input type="number" id="newWeightInput" placeholder="Bugünkü kilonu gir (kg)" min="30" max="250" step="0.1">
+          <button onclick="saveNewWeight()">+ Kaydet</button>
+        </div>
+      </div>
+      <div class="analytics-card">
+        <div class="ac-title">🔥 Günlük Kalori</div>
+        <div class="ac-sub">Son 7 günün kalori alımı</div>
+        <div class="chart-canvas-wrap"><canvas class="chart" id="kcalChart"></canvas></div>
+      </div>
+      <div class="analytics-card">
+        <div class="ac-title">💪 Egzersiz Yakımı</div>
+        <div class="ac-sub">Son 7 günde yakılan kalori</div>
+        <div class="chart-canvas-wrap"><canvas class="chart" id="exChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- BMI -->
 <section class="bmi-section reveal" id="bmi">
   <div class="section-tag">● Hesaplayıcı</div>
@@ -664,6 +772,7 @@
     </div>
   </div>
 </section>
+
 <!-- BLOG -->
 <section class="fitbot-section reveal" id="blog" style="padding-bottom:40px">
   <div class="section-tag">● Blog</div>
@@ -691,6 +800,7 @@
     </div>
   </div>
 </div>
+
 <!-- FİTBOT -->
 <section class="fitbot-section reveal" id="fitbot">
   <div class="section-tag">● Yapay Zeka Asistanı</div>
@@ -774,7 +884,6 @@ async function updateNav() {
         </button>
         <button class="nav-logout" onclick="window.location.href='/logout'">Çıkış →</button>`;
       renderProfileCard(data.profile, data.username);
-      // Bugünkü yemekleri yükle
       if (data.foods && data.foods.length > 0) {
         data.foods.forEach(f => {
           foods.push({ id: f.id, name: f.name, kcal: f.kcal, portion: '', source: 'db' });
@@ -783,14 +892,12 @@ async function updateNav() {
         renderFoodLog();
         updateCalorieUI();
       }
-      // Su yükle
       if (data.water) {
         waterCount = data.water;
         buildGlasses();
         document.getElementById('waterCount').textContent = waterCount;
         document.getElementById('waterMl').textContent = waterCount * 250;
       }
-      // Egzersizleri yükle
       if (data.exercises && data.exercises.length > 0) {
         data.exercises.forEach(e => {
           exercises.push({emoji: e.emoji, name: e.name, meta: '', kcal: e.kcal});
@@ -912,7 +1019,7 @@ function switchTool(id,el){
   document.getElementById('panel-'+id).classList.add('active');
 }
 
-// ── FOOD LOG (YENİ SİSTEM) ───────────────────────────────────────
+// ── FOOD LOG ─────────────────────────────────────────────────────
 const foods = [];
 let totalKcal = 0;
 let totalProtein = 0, totalCarb = 0, totalFat = 0;
@@ -1175,16 +1282,126 @@ async function calcBMI(){
 }
 
 // ── PROGRAM SEÇİMİ ───────────────────────────────────────────────
-let selectedProgramCard='';
-async function selectProgramCard(el,prog){
-  document.querySelectorAll('.program-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected'); selectedProgramCard=prog;
-  const msg=document.getElementById('programSelectedMsg');
-  msg.style.display='block'; setTimeout(()=>msg.style.display='none',3000);
-  try{
-    await fetch('/update-profile',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({notes:`Program: ${prog}`})});
-  }catch(e){}
+let selectedProgramCard = '';
+
+function selectProgramCard(el, prog) {
+  document.querySelectorAll('.program-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedProgramCard = prog;
+  const msg = document.getElementById('programSelectedMsg');
+  if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 4000); }
+  try {
+    fetch('/update-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notes: `Program: ${prog}` })
+    });
+  } catch(e) {}
+  openProgModal(prog);
+}
+
+// ── PROGRAM DETAY VERİLERİ ───────────────────────────────────────
+const PROGRAM_DETAILS = {
+  'kilo-kaybi': {
+    emoji: '🔥',
+    bg: 'linear-gradient(135deg,#1a6b3a,#2d9e57)',
+    title: 'Kilo Kaybı Programı',
+    sub: 'Güvenli, sürdürülebilir ve sağlıklı kilo verme',
+    stats: [
+      {val:'500', label:'Günlük Kalori Açığı'},
+      {val:'3-5', label:'Antrenman / Hafta'},
+      {val:'0.5-1 kg', label:'Haftalık Hedef'},
+    ],
+    tips: [
+      {icon:'🥗', text:'Protein ağırlıklı beslenme tercih et — her öğünde tavuk, yumurta, baklagil veya tofu bulundurmaya çalış.'},
+      {icon:'💧', text:'Günde en az 8 bardak su iç. Öğün öncesi 1 bardak su tokluk hissini artırır.'},
+      {icon:'🏃', text:'Haftada en az 150 dakika orta yoğunluklu kardiyoya odaklan. Yürüyüş, bisiklet veya yüzme idealdir.'},
+      {icon:'😴', text:'7-9 saat kaliteli uyku metabolizma hızını korur. Uykusuzluk iştahı artıran hormonları tetikler.'},
+      {icon:'📊', text:'Her hafta aynı saatte, aynı koşullarda tartıl. Günlük dalgalanmalar normaldir, haftalık trende bak.'},
+    ]
+  },
+  'kilo-alimi': {
+    emoji: '💪',
+    bg: 'linear-gradient(135deg,#f26b2e,#f5a623)',
+    title: 'Kilo Alımı Programı',
+    sub: 'Kas kütlesi odaklı, sağlıklı kilo artışı',
+    stats: [
+      {val:'+300', label:'Günlük Kalori Fazlası'},
+      {val:'4-5', label:'Ağırlık Antrenmanı / Hafta'},
+      {val:'0.25-0.5 kg', label:'Haftalık Hedef'},
+    ],
+    tips: [
+      {icon:'🍗', text:'Vücut ağırlığının her kilogramı için 1.8-2.2 gram protein tüket. Kas sentezi için bu şart.'},
+      {icon:'🍚', text:'Karbonhidrat antrenman öncesi ve sonrası en çok ihtiyaç duyulan enerji kaynağıdır.'},
+      {icon:'🏋️', text:'Progresif aşırı yükleme ilkesiyle antren: her haftada ağırlığı veya tekrarı artırmaya çalış.'},
+      {icon:'⏰', text:'Antrenman sonrası 30-60 dakika içinde protein + karbonhidrat kombinasyonu tüket.'},
+      {icon:'🌙', text:'Uyku sırasında büyüme hormonu salgılanır. Kas gelişimi için 8+ saat uyku kritik öneme sahiptir.'},
+    ]
+  },
+  'kilo-kontrolu': {
+    emoji: '⚖️',
+    bg: 'linear-gradient(135deg,#0e1a10,#2a3d2c)',
+    title: 'Kilo Kontrolü Programı',
+    sub: 'Mevcut kilonu koruyarak sağlıklı ve dengeli yaşam',
+    stats: [
+      {val:'±100', label:'Kalori Dengesi'},
+      {val:'3-4', label:'Aktivite / Hafta'},
+      {val:'Stabil', label:'Haftalık Hedef'},
+    ],
+    tips: [
+      {icon:'🥦', text:'Tabağının yarısını sebze, çeyreğini tam tahıl, çeyreğini protein yaparak dengeli öğünler oluştur.'},
+      {icon:'🎯', text:'Haftalık kalori toplamına odaklan — tek bir günün fazla kalori alımı tüm haftayı mahvetmez.'},
+      {icon:'🚶', text:'Günlük 8.000-10.000 adım temel aktivite düzeyini korumana yardımcı olur.'},
+      {icon:'📝', text:'Yemek günlüğü tutmak bilinçsiz atıştırmaları fark etmeni ve önlemeni sağlar.'},
+      {icon:'🍷', text:'Sosyal yemeklerde küçük porsiyonlar seçmek, yavaş yemek ve su içmek kontrolü kolaylaştırır.'},
+    ]
+  },
+  'saglikli': {
+    emoji: '🥗',
+    bg: 'linear-gradient(135deg,#b5e550,#7dc924)',
+    title: 'Sağlıklı Beslenme Programı',
+    sub: 'Vitamin, mineral ve besin dengesiyle bütünsel sağlık',
+    stats: [
+      {val:'5', label:'Renk / Öğün'},
+      {val:'2-3', label:'Hareket / Hafta'},
+      {val:'Bütünsel', label:'Yaklaşım'},
+    ],
+    tips: [
+      {icon:'🌈', text:'Her öğünde en az 3 farklı renkte sebze veya meyve yemeye çalış — farklı renkler farklı antioksidanlar demektir.'},
+      {icon:'🐟', text:'Haftada 2 kez yağlı balık (somon, uskumru, sardalye) tüketmek omega-3 ihtiyacını karşılar.'},
+      {icon:'🫀', text:'İşlenmiş gıda, şeker ve trans yağları azalt; tam tahıllar, kurubaklagil ve zeytinyağını artır.'},
+      {icon:'🧘', text:'Yemek sırasında telefon ve ekranı kapat. Bilinçli yeme sindirimi ve tokluk sinyallerini iyileştirir.'},
+      {icon:'🌿', text:'Fermente gıdalar (yoğurt, kefir, turşu) bağırsak mikrobiyomunu besleyerek genel sağlığı destekler.'},
+    ]
+  }
+};
+
+function openProgModal(prog) {
+  const d = PROGRAM_DETAILS[prog];
+  if (!d) return;
+  document.getElementById('progModalHero').style.background = d.bg;
+  document.getElementById('progModalHero').textContent = d.emoji;
+  document.getElementById('progModalTitle').textContent = d.title;
+  document.getElementById('progModalSub').textContent = d.sub;
+  document.getElementById('progModalStats').innerHTML = d.stats.map(s =>
+    `<div class="pms"><div class="pms-val">${s.val}</div><div class="pms-label">${s.label}</div></div>`
+  ).join('');
+  document.getElementById('progModalTips').innerHTML = d.tips.map(t =>
+    `<div class="pmt"><div class="pmt-icon">${t.icon}</div><div>${t.text}</div></div>`
+  ).join('');
+  const btn = document.getElementById('progModalStartBtn');
+  btn.onclick = () => {
+    closeProgModal();
+    document.getElementById('fitbot').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => fcpSend(`${d.title} için özel tavsiyeler ver`), 600);
+  };
+  document.getElementById('progDetailModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProgModal() {
+  document.getElementById('progDetailModal').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 // ── RECIPES ──────────────────────────────────────────────────────
@@ -1338,12 +1555,211 @@ async function fcpCallAPI(message){
   }
 }
 
-// ── SAYFA YÜKLENINCE ─────────────────────────────────────────────
-window.addEventListener('load', () => {
-  updateNav();
-  loadPeriodData();
-  loadBlog();
-});
+// ── GRAFİK ANALİZ ─────────────────────────────────────────────────────────
+let weightChartInst = null, kcalChartInst = null, exChartInst = null;
+
+function loadChartJS(cb) {
+  if (window.Chart) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+  s.onload = cb;
+  document.head.appendChild(s);
+}
+
+async function loadAnalytics() {
+  try {
+    const res = await fetch('/kilo-istatistikleri');
+    if (!res.ok) {
+      document.getElementById('analyticsLoginPrompt').style.display = 'block';
+      document.getElementById('analyticsContent').style.display = 'none';
+      return;
+    }
+    const data = await res.json();
+    if (!data.success) {
+      if (data.login_required) {
+        document.getElementById('analyticsLoginPrompt').style.display = 'block';
+      }
+      return;
+    }
+    document.getElementById('analyticsLoginPrompt').style.display = 'none';
+    document.getElementById('analyticsContent').style.display = 'block';
+
+    const cw = data.current_weight;
+    const tw = data.target_weight;
+    const diff = Math.abs(cw - tw).toFixed(1);
+    document.getElementById('amCurrentWeight').textContent = cw ? cw + ' kg' : '—';
+    document.getElementById('amTargetDiff').textContent = diff + ' kg';
+
+    const dir = cw > tw ? 'Vermesi gerekiyor' : (cw < tw ? 'Alması gerekiyor' : 'Hedefe ulaşıldı!');
+    const dirClass = cw > tw ? 'up' : (cw < tw ? 'down' : 'neutral');
+    document.getElementById('amTargetDir').textContent = dir;
+    document.getElementById('amTargetDir').className = 'am-trend ' + dirClass;
+
+    const wh = data.weight_history;
+    if (wh.length >= 2) {
+      const trendVal = (wh[wh.length - 1].weight - wh[0].weight).toFixed(1);
+      const trendEl = document.getElementById('amWeightTrend');
+      trendEl.textContent = (trendVal > 0 ? '+' : '') + trendVal + ' kg';
+      trendEl.className = 'am-trend ' + (trendVal < 0 ? 'down' : trendVal > 0 ? 'up' : 'neutral');
+    }
+
+    const ds = data.daily_summary;
+    const totalKcal7 = ds.reduce((a, d) => a + d.kcal, 0);
+    const daysWithKcal = ds.filter(d => d.kcal > 0).length;
+    const avgKcal = daysWithKcal ? Math.round(totalKcal7 / daysWithKcal) : 0;
+    const totalEx7 = ds.reduce((a, d) => a + d.ex_kcal, 0);
+    document.getElementById('amAvgKcal').textContent = avgKcal || '—';
+    document.getElementById('amTotalEx').textContent = totalEx7 ? totalEx7 + ' kcal' : '—';
+
+    loadChartJS(() => renderCharts(data));
+  } catch(e) {
+    console.log('Analytics yüklenemedi:', e);
+    document.getElementById('analyticsLoginPrompt').style.display = 'block';
+  }
+}
+
+function renderCharts(data) {
+  const C = window.Chart;
+  const wh = data.weight_history;
+  const ds = data.daily_summary;
+  const target = data.target_weight;
+
+  const dayLabels = ds.map(d => {
+    const parts = d.day.split('-');
+    return parts[2] + '/' + parts[1];
+  });
+
+  const baseFont = { family: "'DM Sans', sans-serif", size: 11 };
+  const gridColor = 'rgba(255,255,255,0.06)';
+  const tickColor = 'rgba(255,255,255,0.3)';
+
+  if (weightChartInst) weightChartInst.destroy();
+  const wCtx = document.getElementById('weightChart').getContext('2d');
+  const weightGrad = wCtx.createLinearGradient(0, 0, 0, 180);
+  weightGrad.addColorStop(0, 'rgba(181,229,80,0.25)');
+  weightGrad.addColorStop(1, 'rgba(181,229,80,0)');
+
+  const weightLabels = wh.length
+    ? wh.map(w => { const p = w.day.split('-'); return p[2]+'/'+p[1]; })
+    : ['Veri yok'];
+  const weightVals = wh.length ? wh.map(w => w.weight) : [];
+
+  weightChartInst = new C(wCtx, {
+    type: 'line',
+    data: {
+      labels: weightLabels,
+      datasets: [
+        {
+          label: 'Kilo (kg)',
+          data: weightVals,
+          borderColor: '#b5e550',
+          backgroundColor: weightGrad,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#b5e550',
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          borderWidth: 2.5
+        },
+        {
+          label: 'Hedef',
+          data: Array(weightLabels.length).fill(target),
+          borderColor: 'rgba(244,114,182,0.5)',
+          borderDash: [6, 4],
+          fill: false,
+          pointRadius: 0,
+          borderWidth: 1.5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: tickColor, font: baseFont, boxWidth: 14 } } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, font: baseFont } },
+        y: { grid: { color: gridColor }, ticks: { color: tickColor, font: baseFont } }
+      }
+    }
+  });
+
+  if (kcalChartInst) kcalChartInst.destroy();
+  const kCtx = document.getElementById('kcalChart').getContext('2d');
+  const kcalGrad = kCtx.createLinearGradient(0, 0, 0, 180);
+  kcalGrad.addColorStop(0, 'rgba(242,107,46,0.7)');
+  kcalGrad.addColorStop(1, 'rgba(242,107,46,0.1)');
+  kcalChartInst = new C(kCtx, {
+    type: 'bar',
+    data: {
+      labels: dayLabels,
+      datasets: [{
+        label: 'Kalori (kcal)',
+        data: ds.map(d => d.kcal),
+        backgroundColor: kcalGrad,
+        borderColor: '#f26b2e',
+        borderWidth: 1.5,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, font: baseFont } },
+        y: { grid: { color: gridColor }, ticks: { color: tickColor, font: baseFont }, beginAtZero: true }
+      }
+    }
+  });
+
+  if (exChartInst) exChartInst.destroy();
+  const eCtx = document.getElementById('exChart').getContext('2d');
+  const exGrad = eCtx.createLinearGradient(0, 0, 0, 180);
+  exGrad.addColorStop(0, 'rgba(45,158,87,0.7)');
+  exGrad.addColorStop(1, 'rgba(45,158,87,0.1)');
+  exChartInst = new C(eCtx, {
+    type: 'bar',
+    data: {
+      labels: dayLabels,
+      datasets: [{
+        label: 'Yakılan (kcal)',
+        data: ds.map(d => d.ex_kcal),
+        backgroundColor: exGrad,
+        borderColor: '#2d9e57',
+        borderWidth: 1.5,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, font: baseFont } },
+        y: { grid: { color: gridColor }, ticks: { color: tickColor, font: baseFont }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+async function saveNewWeight() {
+  const inp = document.getElementById('newWeightInput');
+  const val = parseFloat(inp.value);
+  if (!val || val < 20 || val > 300) { inp.style.borderColor = '#f472b6'; setTimeout(() => inp.style.borderColor = '', 1500); return; }
+  try {
+    const res = await fetch('/kilo-kaydet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ weight: val })
+    });
+    const data = await res.json();
+    if (data.success) {
+      inp.value = '';
+      await loadAnalytics();
+    }
+  } catch(e) {}
+}
+
 // ── BLOG ─────────────────────────────────────────────────────────
 const blogGradients = [
   'linear-gradient(135deg,#1a6b3a,#2d9e57)',
@@ -1410,6 +1826,15 @@ function closeBlogModal() {
   document.getElementById('blogModal').classList.remove('open');
   document.body.style.overflow = '';
 }
+
+// ── SAYFA YÜKLENINCE ─────────────────────────────────────────────
+window.addEventListener('load', () => {
+  updateNav();
+  loadPeriodData();
+  loadBlog();
+  loadAnalytics();
+});
 </script>
+
 </body>
 </html>
